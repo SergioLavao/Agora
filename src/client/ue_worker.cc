@@ -29,6 +29,11 @@ static constexpr bool kPrintDownlinkPilotStats = false;
 static constexpr bool kPrintEqualizedSymbols = false;
 static constexpr bool kDebugTxMemory = false;
 
+/*CHSIM Temp*/
+static constexpr bool kBypassFFTData = false;
+static constexpr bool kBypassFFTPilot = false;
+static constexpr bool kBypass_iFFT = false;
+
 UeWorker::UeWorker(
     size_t tid, Config& config, Stats& shared_stats, PhyStats& shared_phy_stats,
     moodycamel::ConcurrentQueue<EventData>& notify_queue,
@@ -130,7 +135,7 @@ void UeWorker::TaskThread(size_t core_offset) {
           DoModul(event.tags_[0]);
         } break;
         case EventType::kFFTPilot: {
-          DoFftPilot(event.tags_[0]);
+          DoFftPilot(event.tags_[0]); 
         } break;
         case EventType::kFFT: {
           DoFftData(event.tags_[0]);
@@ -158,6 +163,24 @@ void UeWorker::DoFftPilot(size_t tag) {
   const size_t ant_id = pkt->ant_id_;
   const size_t frame_slot = frame_id % kFrameWnd;
 
+  if( kBypassFFTPilot )
+  {
+
+    AGORA_LOG_INFO( "Bypass FFT Pilot at (frame %zu, symbol %zu, ant %zu) \n",
+                  frame_id, symbol_id, ant_id );
+
+    // Free the rx buffer
+    fft_req_tag_t(tag).rx_packet_->Free();
+    EventData fft_finish_event =
+        EventData(EventType::kFFTPilot,
+                  gen_tag_t::FrmSymAnt(frame_id, symbol_id, ant_id).tag_);
+    RtAssert(notify_queue_.enqueue(*ptok_.get(), fft_finish_event),
+            "UeWorker: Bypassed FFT Pilot message enqueue failed");
+
+    return;
+
+  }
+  
   if (kDebugPrintInTask || kDebugPrintFft) {
     AGORA_LOG_INFO("UeWorker[%zu]: Fft Pilot(frame %zu, symbol %zu, ant %zu)\n",
                    tid_, frame_id, symbol_id, ant_id);
@@ -260,6 +283,24 @@ void UeWorker::DoFftData(size_t tag) {
   const size_t symbol_id = pkt->symbol_id_;
   const size_t ant_id = pkt->ant_id_;
   const size_t frame_slot = frame_id % kFrameWnd;
+
+  if( kBypassFFTData ) //CHSIM Temp
+  {
+
+    AGORA_LOG_INFO( "Bypass FFT Data at (frame %zu, symbol %zu, ant %zu)\n",
+                  frame_id, symbol_id, ant_id );
+     
+    // Free the rx buffer
+    fft_req_tag_t(tag).rx_packet_->Free();
+
+    EventData fft_finish_event = EventData(
+      EventType::kFFT, gen_tag_t::FrmSymAnt(frame_id, symbol_id, ant_id).tag_);
+    RtAssert(notify_queue_.enqueue(*ptok_.get(), fft_finish_event),
+           "UeWorker: Bypassed FFT Data message enqueue failed");
+
+    return; 
+
+  }
 
   if (kDebugPrintInTask || kDebugPrintFft) {
     AGORA_LOG_INFO("UeWorker[%zu]: Fft Data(frame %zu, symbol %zu, ant %zu)\n",
@@ -377,7 +418,7 @@ void UeWorker::DoFftData(size_t tag) {
 
   // Free the rx buffer
   fft_req_tag_t(tag).rx_packet_->Free();
-
+    
   EventData fft_finish_event = EventData(
       EventType::kFFT, gen_tag_t::FrmSymAnt(frame_id, symbol_id, ant_id).tag_);
   RtAssert(notify_queue_.enqueue(*ptok_.get(), fft_finish_event),
@@ -638,6 +679,21 @@ void UeWorker::DoIfft(size_t tag) {
     AGORA_LOG_INFO("User Task[%zu]: iFFT   (frame %zu, symbol %zu, user %zu)\n",
                    tid_, frame_id, symbol_id, ant_id);
   }
+
+  if (kBypass_iFFT) 
+  {
+
+    AGORA_LOG_INFO( "Bypass iFFT at (frame %zu, symbol %zu, ant %zu) \n",
+                  frame_id, symbol_id, ant_id );
+
+    size_t completion_tag = gen_tag_t::FrmSymUe(frame_id, symbol_id, ant_id).tag_;
+    RtAssert(notify_queue_.enqueue(*ptok_.get(),
+                                   EventData(EventType::kIFFT, completion_tag)),
+             "Bupased IFFT symbol complete message enqueue failed");
+    return;
+  
+  }
+
   size_t start_tsc = GetTime::Rdtsc();
 
   const size_t ul_symbol_perframe = config_.Frame().NumULSyms();
