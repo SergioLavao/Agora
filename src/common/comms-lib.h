@@ -23,9 +23,8 @@
 #include "memory_manage.h"
 #include "mkl_dfti.h"
 
-
 /*CHSim Temp flag */
-static const bool kBypass_FFTs_Downlink = true; 
+static const bool kBypass_FFTs_Downlink = true;
 
 /*CHSim Temp flag */
 static const bool kBypass_FFTs_Uplink = false;
@@ -56,7 +55,7 @@ class CommsLib {
 
   explicit CommsLib(std::string);
   ~CommsLib();
-  
+
   static std::vector<std::vector<double>> GetSequence(size_t seq_len, int type);
   static std::vector<std::complex<float>> Modulate(
       const std::vector<int8_t>& in, int type);

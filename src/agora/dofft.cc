@@ -86,7 +86,6 @@ static inline void CalibRegressionEstimate(const arma::cx_fvec& in_vec,
   out_vec *= arma::mean(in_mag);
 }
 
-
 EventData DoFFT::Launch(size_t tag) {
   const size_t start_tsc = GetTime::WorkerRdtsc();
   Packet* pkt = fft_req_tag_t(tag).rx_packet_->RawPacket();
@@ -101,20 +100,17 @@ EventData DoFFT::Launch(size_t tag) {
   /* CHSim temp flag */
   const bool kBypassFFT = kBypass_FFTs_Uplink;
 
-  if( kBypassFFT == true ) {
-
+  if (kBypassFFT == true) {
     SimdConvertShortToFloat(&pkt->data_[2 * cfg_->OfdmRxZeroPrefixBs()],
                             reinterpret_cast<float*>(fft_inout_),
                             cfg_->OfdmCaNum() * 2);
 
-  }
-  else if ( cfg_->FftInRru() == true ) {
-
+  } else if (cfg_->FftInRru() == true) {
     SimdConvertFloat16ToFloat32(
         reinterpret_cast<float*>(fft_inout_),
         reinterpret_cast<float*>(&pkt->data_[2 * cfg_->OfdmRxZeroPrefixBs()]),
         cfg_->OfdmCaNum() * 2);
-  
+
   } else {
     if (kUse12BitIQ) {
       SimdConvert12bitIqToFloat(
@@ -194,23 +190,22 @@ EventData DoFFT::Launch(size_t tag) {
   size_t start_tsc1 = GetTime::WorkerRdtsc();
   duration_stat->task_duration_.at(1) += start_tsc1 - start_tsc;
 
-  if( kBypassFFT == true ) {
+  if (kBypassFFT == true) {
+    AGORA_LOG_INFO(
+        "RX BS DoFFT Bypassed using Simulator "
+        "(Frame %lld, Symbol %lld, Ant %lld )\n",
+        frame_id, symbol_id, ant_id);
 
-    AGORA_LOG_INFO("RX BS DoFFT Bypassed using Simulator "
-                  "(Frame %lld, Symbol %lld, Ant %lld )\n",
-                  frame_id, symbol_id, ant_id);
+  } else if (cfg_->FftInRru() == true) {
+    AGORA_LOG_INFO(
+        "RX BS DoFFT Bypassed using Sender "
+        "(Frame %lld, Symbol %lld, Ant %lld )\n",
+        frame_id, symbol_id, ant_id);
 
-  }else if ( cfg_->FftInRru() == true ) {
-    
-    AGORA_LOG_INFO("RX BS DoFFT Bypassed using Sender "
-                  "(Frame %lld, Symbol %lld, Ant %lld )\n",
-                  frame_id, symbol_id, ant_id);
-  
-  }else {
-
+  } else {
     DftiComputeForward(
-    mkl_handle_,
-    reinterpret_cast<float*>(fft_inout_));  // Compute FFT in-place
+        mkl_handle_,
+        reinterpret_cast<float*>(fft_inout_));  // Compute FFT in-place
 
     //// FFT shift the buffer
     std::memcpy(fft_shift_tmp_, fft_inout_, sizeof(float) * cfg_->OfdmCaNum());
@@ -218,7 +213,6 @@ EventData DoFFT::Launch(size_t tag) {
                 sizeof(float) * cfg_->OfdmCaNum());
     std::memcpy(fft_inout_ + cfg_->OfdmCaNum() / 2, fft_shift_tmp_,
                 sizeof(float) * cfg_->OfdmCaNum());
-
   }
 
   size_t start_tsc2 = GetTime::WorkerRdtsc();
