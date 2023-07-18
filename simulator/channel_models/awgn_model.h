@@ -9,8 +9,7 @@ class AwgnModel: public ChannelModel {
     public:
         AwgnModel( const Config* config ) : ChannelModel( config, ChannelModel::kFlat ) {}
 
-        void UpdateModel() override
-        {
+        void UpdateModel() override {
 
             arma::fmat rmat(ues_num_, bss_num_, arma::fill::ones);
             arma::fmat imat(ues_num_, bss_num_, arma::fill::ones);

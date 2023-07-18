@@ -15,8 +15,7 @@ class ChannelModel {
 
         enum FadingType { kFlat, kSelective };
 
-        ChannelModel( const Config* config, FadingType fading_type_ )
-        {
+        ChannelModel( const Config* config, FadingType fading_type_ ) {
             
             bss_num_ = config->BsAntNum();
             ues_num_ = config->UeAntNum();
@@ -41,8 +40,7 @@ class ChannelModel {
         * Returns H Matrix, if selective fading apply h_slice_index for each subcarrier
         * @param h_matrix_index  -1 if flat fading, subcarrier index if selective fading
         */
-        virtual arma::cx_fmat GetMatrix( bool is_downlink , int h_matrix_index = -1)
-        {
+        virtual arma::cx_fmat GetMatrix( bool is_downlink , int h_matrix_index = -1) {
             
             //Check if its flat fading
             if( h_matrix_index == -1 )
@@ -57,11 +55,9 @@ class ChannelModel {
         }
 
         //Returns Simple Transposed Target Matrix if Downlink or Target Matrix if Uplink.
-        arma::cx_fmat GetMatrixByPathway( bool is_downlink, const arma::cx_fmat& matrix_target )
-        {
+        arma::cx_fmat GetMatrixByPathway( bool is_downlink, const arma::cx_fmat& matrix_target ) {
 
-            if( is_downlink )
-            {
+            if( is_downlink ) {
                 
                 return matrix_target.st();
 

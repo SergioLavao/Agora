@@ -23,7 +23,6 @@
 #include "memory_manage.h"
 #include "mkl_dfti.h"
 
-
 /*CHSim Temp flag */
 static const bool kBypass_FFTs_Downlink = true; 
 
