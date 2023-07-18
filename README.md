@@ -1,4 +1,4 @@
-[![Build Status](https://falcon.ecg.rice.edu:443/buildStatus/icon?job=github_public_agora%2Fiss53)](https://falcon.ecg.rice.edu:443/job/github_public_agora/job/iss53/)
+[![Build Status](https://falcon.ecg.rice.edu:443/buildStatus/icon?job=github_public_agora%2Fchsim-temp-changes)](https://falcon.ecg.rice.edu:443/job/github_public_agora/job/chsim-temp-changes/)
 
 Agora is a complete software realization of real-time massive MIMO baseband processing. 
 
