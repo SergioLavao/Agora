@@ -135,6 +135,7 @@ ChannelSim::~ChannelSim() {
   }
 }
 
+
 void ChannelSim::ScheduleTask(EventData do_task,
                               moodycamel::ConcurrentQueue<EventData>* in_queue,
                               moodycamel::ProducerToken const& ptok) {

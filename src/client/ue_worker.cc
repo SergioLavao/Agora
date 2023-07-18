@@ -29,11 +29,6 @@ static constexpr bool kPrintDownlinkPilotStats = false;
 static constexpr bool kPrintEqualizedSymbols = false;
 static constexpr bool kDebugTxMemory = false;
 
-/*CHSIM Temp*/
-static constexpr bool kBypassFFTData = false;
-static constexpr bool kBypassFFTPilot = false;
-static constexpr bool kBypass_iFFT = false;
-
 UeWorker::UeWorker(
     size_t tid, Config& config, Stats& shared_stats, PhyStats& shared_phy_stats,
     moodycamel::ConcurrentQueue<EventData>& notify_queue,
@@ -106,9 +101,6 @@ void UeWorker::TaskThread(size_t core_offset) {
       (kEnableMac == true) ? ul_bits_buffer_ : config_.UlBits(),
       (kEnableMac == true) ? kFrameWnd : 1, encoded_buffer_, &stats_);
 
-  auto iffter = std::make_unique<DoIFFTClient>(
-      &config_, (int)tid_, ifft_buffer_, tx_buffer_, &stats_);
-
   auto decoder =
       std::make_unique<DoDecodeClient>(&config_, (int)tid_, demod_buffer_,
                                        decoded_buffer_, &phy_stats_, &stats_);
@@ -125,7 +117,6 @@ void UeWorker::TaskThread(size_t core_offset) {
           DoDemul(event.tags_[0]);
         } break;
         case EventType::kIFFT: {
-          // DoIfftUe(iffter.get(), event.tags_[0]);
           DoIfft(event.tags_[0]);
         } break;
         case EventType::kEncode: {
@@ -163,24 +154,9 @@ void UeWorker::DoFftPilot(size_t tag) {
   const size_t ant_id = pkt->ant_id_;
   const size_t frame_slot = frame_id % kFrameWnd;
 
-  if( kBypassFFTPilot )
-  {
+  /*CHSim temp flag */
+  const bool kBypassFFTPilot = kBypass_FFTs_Downlink;
 
-    AGORA_LOG_INFO( "Bypass FFT Pilot at (frame %zu, symbol %zu, ant %zu) \n",
-                  frame_id, symbol_id, ant_id );
-
-    // Free the rx buffer
-    fft_req_tag_t(tag).rx_packet_->Free();
-    EventData fft_finish_event =
-        EventData(EventType::kFFTPilot,
-                  gen_tag_t::FrmSymAnt(frame_id, symbol_id, ant_id).tag_);
-    RtAssert(notify_queue_.enqueue(*ptok_.get(), fft_finish_event),
-            "UeWorker: Bypassed FFT Pilot message enqueue failed");
-
-    return;
-
-  }
-  
   if (kDebugPrintInTask || kDebugPrintFft) {
     AGORA_LOG_INFO("UeWorker[%zu]: Fft Pilot(frame %zu, symbol %zu, ant %zu)\n",
                    tid_, frame_id, symbol_id, ant_id);
@@ -222,15 +198,19 @@ void UeWorker::DoFftPilot(size_t tag) {
   SimdConvertShortToFloat(&pkt->data_[delay_offset], fft_buff,
                           config_.OfdmCaNum() * 2);
 
-  // perform fft
-  DftiComputeForward(mkl_handle_, fft_buffer_[fft_buffer_target_id]);
+  if( kBypassFFTPilot == false ) {
 
-  //// FFT shift the buffer
-  std::vector<complex_float> temp_fft_buf(config_.OfdmCaNum());
-  auto* temp_buff = reinterpret_cast<complex_float*>(temp_fft_buf.data());
-  auto* fft_buff_complex =
-      reinterpret_cast<complex_float*>(fft_buffer_[fft_buffer_target_id]);
-  CommsLib::FFTShift(fft_buff_complex, temp_buff, config_.OfdmCaNum());
+    // perform fft
+    DftiComputeForward(mkl_handle_, fft_buffer_[fft_buffer_target_id]);
+
+    //// FFT shift the buffer
+    std::vector<complex_float> temp_fft_buf(config_.OfdmCaNum());
+    auto* temp_buff = reinterpret_cast<complex_float*>(temp_fft_buf.data());
+    auto* fft_buff_complex =
+        reinterpret_cast<complex_float*>(fft_buffer_[fft_buffer_target_id]);
+    CommsLib::FFTShift(fft_buff_complex, temp_buff, config_.OfdmCaNum());
+  
+  }
 
   size_t csi_offset = frame_slot * config_.UeAntNum() + ant_id;
   auto* csi_buffer_ptr =
@@ -284,23 +264,8 @@ void UeWorker::DoFftData(size_t tag) {
   const size_t ant_id = pkt->ant_id_;
   const size_t frame_slot = frame_id % kFrameWnd;
 
-  if( kBypassFFTData ) //CHSIM Temp
-  {
-
-    AGORA_LOG_INFO( "Bypass FFT Data at (frame %zu, symbol %zu, ant %zu)\n",
-                  frame_id, symbol_id, ant_id );
-     
-    // Free the rx buffer
-    fft_req_tag_t(tag).rx_packet_->Free();
-
-    EventData fft_finish_event = EventData(
-      EventType::kFFT, gen_tag_t::FrmSymAnt(frame_id, symbol_id, ant_id).tag_);
-    RtAssert(notify_queue_.enqueue(*ptok_.get(), fft_finish_event),
-           "UeWorker: Bypassed FFT Data message enqueue failed");
-
-    return; 
-
-  }
+  /*CHSim temp flag */
+  const bool kBypassFFTData = kBypass_FFTs_Downlink;
 
   if (kDebugPrintInTask || kDebugPrintFft) {
     AGORA_LOG_INFO("UeWorker[%zu]: Fft Data(frame %zu, symbol %zu, ant %zu)\n",
@@ -323,15 +288,19 @@ void UeWorker::DoFftData(size_t tag) {
   SimdConvertShortToFloat(&pkt->data_[delay_offset], fft_buff,
                           config_.OfdmCaNum() * 2);
 
-  // perform fft
-  DftiComputeForward(mkl_handle_, fft_buffer_[fft_buffer_target_id]);
+  if( kBypassFFTData == false ) {
 
-  //// FFT shift the buffer
-  std::vector<complex_float> temp_fft_buf(config_.OfdmCaNum());
-  auto* temp_buff = reinterpret_cast<complex_float*>(temp_fft_buf.data());
-  auto* fft_buff_complex =
-      reinterpret_cast<complex_float*>(fft_buffer_[fft_buffer_target_id]);
-  CommsLib::FFTShift(fft_buff_complex, temp_buff, config_.OfdmCaNum());
+    // perform fft
+    DftiComputeForward(mkl_handle_, fft_buffer_[fft_buffer_target_id]);
+
+    //// FFT shift the buffer
+    std::vector<complex_float> temp_fft_buf(config_.OfdmCaNum());
+    auto* temp_buff = reinterpret_cast<complex_float*>(temp_fft_buf.data());
+    auto* fft_buff_complex =
+        reinterpret_cast<complex_float*>(fft_buffer_[fft_buffer_target_id]);
+    CommsLib::FFTShift(fft_buff_complex, temp_buff, config_.OfdmCaNum());
+
+  }
 
   size_t csi_offset = frame_slot * config_.UeAntNum() + ant_id;
   auto* csi_buffer_ptr =
@@ -418,7 +387,7 @@ void UeWorker::DoFftData(size_t tag) {
 
   // Free the rx buffer
   fft_req_tag_t(tag).rx_packet_->Free();
-    
+
   EventData fft_finish_event = EventData(
       EventType::kFFT, gen_tag_t::FrmSymAnt(frame_id, symbol_id, ant_id).tag_);
   RtAssert(notify_queue_.enqueue(*ptok_.get(), fft_finish_event),
@@ -636,64 +605,20 @@ void UeWorker::DoModul(size_t tag) {
       "Modulation complete message enqueue failed");
 }
 
-void UeWorker::DoIfftUe(DoIFFTClient* iffter, size_t tag) {
-  const size_t frame_id = gen_tag_t(tag).frame_id_;
-  const size_t symbol_id = gen_tag_t(tag).symbol_id_;
-  const size_t ant_id = gen_tag_t(tag).ue_id_;
-
-  // TODO Remove this copy
-  {
-    complex_float const* source_data = nullptr;
-    const size_t ul_symbol_idx = config_.Frame().GetULSymbolIdx(symbol_id);
-    size_t total_ul_symbol_id =
-        config_.GetTotalDataSymbolIdxUl(frame_id, ul_symbol_idx);
-    if (ul_symbol_idx < config_.Frame().ClientUlPilotSymbols()) {
-      source_data = config_.UeSpecificPilot()[ant_id];
-    } else {
-      source_data =
-          &modul_buffer_[total_ul_symbol_id][ant_id * config_.OfdmDataNum()];
-    }
-    const size_t buff_offset =
-        (total_ul_symbol_id * config_.UeAntNum()) + ant_id;
-    complex_float* dest_loc =
-        ifft_buffer_[buff_offset] + (config_.OfdmDataStart());
-    std::memcpy(dest_loc, source_data,
-                sizeof(complex_float) * config_.OfdmDataNum());
-  }
-  iffter->Launch(gen_tag_t::FrmSymAnt(frame_id, symbol_id, ant_id).tag_);
-
-  // Post the completion event (symbol)
-  size_t completion_tag = gen_tag_t::FrmSymUe(frame_id, symbol_id, ant_id).tag_;
-  RtAssert(notify_queue_.enqueue(*ptok_.get(),
-                                 EventData(EventType::kIFFT, completion_tag)),
-           "IFFT symbol complete message enqueue failed");
-}
-
 void UeWorker::DoIfft(size_t tag) {
+ 
   const size_t frame_id = gen_tag_t(tag).frame_id_;
   const size_t symbol_id = gen_tag_t(tag).symbol_id_;
   const size_t ant_id = gen_tag_t(tag).ue_id_;
   const size_t frame_slot = (frame_id % kFrameWnd);
 
+  /* CHSim temp flag */
+  const bool kBypass_iFFT = false;
+  
   if (kDebugPrintInTask) {
     AGORA_LOG_INFO("User Task[%zu]: iFFT   (frame %zu, symbol %zu, user %zu)\n",
                    tid_, frame_id, symbol_id, ant_id);
   }
-
-  if (kBypass_iFFT) 
-  {
-
-    AGORA_LOG_INFO( "Bypass iFFT at (frame %zu, symbol %zu, ant %zu) \n",
-                  frame_id, symbol_id, ant_id );
-
-    size_t completion_tag = gen_tag_t::FrmSymUe(frame_id, symbol_id, ant_id).tag_;
-    RtAssert(notify_queue_.enqueue(*ptok_.get(),
-                                   EventData(EventType::kIFFT, completion_tag)),
-             "Bupased IFFT symbol complete message enqueue failed");
-    return;
-  
-  }
-
   size_t start_tsc = GetTime::Rdtsc();
 
   const size_t ul_symbol_perframe = config_.Frame().NumULSyms();
@@ -743,8 +668,13 @@ void UeWorker::DoIfft(size_t tag) {
 
   std::vector<complex_float> temp_fft_buf(config_.OfdmCaNum());
   auto* temp_buff = reinterpret_cast<complex_float*>(temp_fft_buf.data());
-  CommsLib::FFTShift(ifft_buff, temp_buff, config_.OfdmCaNum());
-  CommsLib::IFFT(ifft_buff, config_.OfdmCaNum(), false);
+  
+  if( kBypass_iFFT == false ){
+
+    CommsLib::FFTShift(ifft_buff, temp_buff, config_.OfdmCaNum());
+    CommsLib::IFFT(ifft_buff, config_.OfdmCaNum(), false);
+    
+  }
 
   const size_t tx_offset = buff_offset * config_.PacketLength();
   char* cur_tx_buffer = &tx_buffer_[tx_offset];
@@ -777,4 +707,64 @@ void UeWorker::DoIfft(size_t tag) {
   RtAssert(notify_queue_.enqueue(*ptok_.get(),
                                  EventData(EventType::kIFFT, completion_tag)),
            "IFFT symbol complete message enqueue failed");
+
+  /* BYPASS IFFT REFERENCE, DoIFFT.cc 
+  const size_t frame_id = gen_tag_t(tag).frame_id_;
+  const size_t symbol_id = gen_tag_t(tag).symbol_id_;
+  const size_t ant_id = gen_tag_t(tag).ue_id_;
+  const size_t frame_slot = (frame_id % kFrameWnd);
+
+  const size_t ul_symbol_idx = config_.Frame().GetULSymbolIdx(symbol_id);
+
+  const size_t ul_symbol_perframe = config_.Frame().NumULSyms();
+
+  const size_t total_ul_symbol_id = frame_slot * ul_symbol_perframe + ul_symbol_idx;
+  const size_t offset = (total_ul_symbol_id * config_.UeAntNum()) + ant_id;
+
+  auto* ifft_in_ptr = reinterpret_cast<float*>(ifft_buffer_[offset]);
+  auto* ifft_out_ptr = ifft_in_ptr;
+
+  std::memset(ifft_in_ptr, 0, sizeof(float) * config_.OfdmDataStart() * 2);
+  std::memset(ifft_in_ptr + (config_.OfdmDataStop()) * 2, 0, sizeof(float) * config_.OfdmDataStart() * 2);
+
+
+  if (ul_symbol_idx < config_.Frame().ClientUlPilotSymbols())
+  {
+  
+    std::memcpy(ifft_in_ptr + config_.OfdmDataStart(), config_.UeSpecificPilot()[ant_id], config_.OfdmDataNum() * sizeof(float) * 2 );
+  
+  } 
+  else 
+  {
+  
+    complex_float* modul_buff = &modul_buffer_[total_ul_symbol_id][ant_id * config_.OfdmDataNum()];
+    std::memcpy(ifft_in_ptr + config_.OfdmDataStart(), reinterpret_cast<float*>(modul_buff) , config_.OfdmDataNum() * sizeof(float) * 2 );
+  
+  }
+
+  const size_t tx_offset = offset * config_.PacketLength();
+  char* cur_tx_buffer = &tx_buffer_[tx_offset];
+
+  auto* pkt = reinterpret_cast<Packet*>( cur_tx_buffer );
+  short* socket_ptr = &pkt->data_[2u * config_.OfdmTxZeroPrefix()];
+
+  auto* tx_data_ptr = reinterpret_cast<std::complex<short>*>(pkt->data_);
+
+  SimdConvertFloatToShort(ifft_out_ptr, socket_ptr, config_.OfdmCaNum() * 2,
+                        config_.CpLen() * 2, 1.0F);//config_.OfdmCaNum() );
+
+  std::stringstream ss;
+  ss << "TXFLOAT_" << ant_id << "_" << ul_symbol_idx << "=[";
+  for (size_t i = 0; i < config_.SampsPerSymbol(); i++) {
+    ss << tx_data_ptr[i * 2] << "+1j*" << tx_data_ptr[i * 2 + 1] << " ";
+  }
+  ss << "];" << std::endl;
+  std::cout << ss.str();
+
+  size_t completion_tag = gen_tag_t::FrmSymUe(frame_id, symbol_id, ant_id).tag_;
+  RtAssert(notify_queue_.enqueue(*ptok_.get(),
+                                 EventData(EventType::kIFFT, completion_tag)),
+           "IFFT symbol complete message enqueue failed");
+  */
+
 }

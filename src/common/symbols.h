@@ -366,5 +366,5 @@ static constexpr bool kOutputUlScData = false;
 static constexpr size_t kOfdmSymbolPerSlot = 1;
 static constexpr size_t kOutputFrameNum = 1;
 
-static constexpr bool kDebugTxData = false;
+static constexpr bool kDebugTxData = true;
 #endif  // SYMBOLS_H_

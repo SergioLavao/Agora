@@ -15,7 +15,6 @@
 #include "csv_logger.h"
 #include "dodecode_client.h"
 #include "doencode.h"
-#include "doifft_client.h"
 #include "message.h"
 #include "mkl_dfti.h"
 #include "simd_types.h"
@@ -51,7 +50,6 @@ class UeWorker {
    */
   void DoEncodeUe(DoEncode* encoder, size_t tag);
   void DoModul(size_t tag);
-  void DoIfftUe(DoIFFTClient* iffter, size_t tag);
   void DoIfft(size_t tag);
 
   /**

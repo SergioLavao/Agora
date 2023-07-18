@@ -51,7 +51,7 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
   {
     channel_model->UpdateModel();
   }
-
+  
   switch ( channel_model->fading_type )
   {
     
@@ -76,21 +76,18 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
       }
 
       break;
-
+      
     }
     
     default:
     {
       
       AGORA_LOG_ERROR("Invalid Channel model fading type \n");
-      
       break;
 
     }
 
   }
-
-  //std::printf("Y [%d Rows x %d Cols] \n", (int)fmat_h.n_rows, (int)fmat_h.n_cols);
 
   // Add noise
   Awgn(fmat_h, fmat_dst);
@@ -117,8 +114,11 @@ void Channel::Awgn(const arma::cx_fmat& src, arma::cx_fmat& dst) const {
     // arma::cx_fmat noise = arma::cx_fmat(x, y);
 
     // Add noise to signal
-    noise *= noise_samp_std_;
-    dst = src + noise;
+    //noise *= noise_samp_std_; //RESTORE LATER
+    //dst = src + noise; //RESTORE LATER
+
+    /*Bypass Noise*/
+    dst = src;
 
     // Check SNR
     if (kPrintSNRCheck) {

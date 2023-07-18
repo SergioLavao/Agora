@@ -23,6 +23,13 @@
 #include "memory_manage.h"
 #include "mkl_dfti.h"
 
+
+/*CHSim Temp flag */
+static const bool kBypass_FFTs_Downlink = true; 
+
+/*CHSim Temp flag */
+static const bool kBypass_FFTs_Uplink = false;
+
 static const std::map<std::string, size_t> kBeamformingStr{
     {"ZF", 0}, {"MMSE", 1}, {"MRC", 2}};
 
@@ -49,7 +56,7 @@ class CommsLib {
 
   explicit CommsLib(std::string);
   ~CommsLib();
-
+  
   static std::vector<std::vector<double>> GetSequence(size_t seq_len, int type);
   static std::vector<std::complex<float>> Modulate(
       const std::vector<int8_t>& in, int type);
