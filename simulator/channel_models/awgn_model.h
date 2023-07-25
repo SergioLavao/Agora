@@ -14,11 +14,14 @@ class AwgnModel : public ChannelModel {
       : ChannelModel(bs_ant_num, ue_ant_num, samples_per_sym,
                      ChannelModel::kFlat) {}
 
+  void UpdateMatrixByIndex( int sc_index ) final {}
+  
   void UpdateModel() final {
     arma::fmat rmat(ues_num_, bss_num_, arma::fill::ones);
     arma::fmat imat(ues_num_, bss_num_, arma::fill::ones);
 
-    h_flat_ = arma::cx_fmat(rmat, imat);
+    h_ = arma::cx_fmat(rmat, imat);
+    
   }
 };
 

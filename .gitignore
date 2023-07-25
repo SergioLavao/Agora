@@ -67,3 +67,4 @@ CTestTestfile.cmake
 sftp-config.json
 
 1000_512_32_4_mob.hdf5
+example_32_4_512_10_rayleigh_dataset.hdf5

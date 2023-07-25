@@ -22,16 +22,13 @@ class ChannelModel {
 
   //Function called every frame
   virtual void UpdateModel() = 0;
-
+  virtual void UpdateMatrixByIndex( int index ) = 0;
+  
   /*
   * Returns H Matrix, if selective fading apply h_slice_index for each subcarrier
-  * @param h_matrix_index  -1 if flat fading, subcarrier index if selective fading
+  * @param index = -1 if flat fading, Subcarrier or OFDM sample index if selective fading
   */
-  virtual arma::cx_fmat GetMatrix(bool is_downlink, int h_matrix_index = -1);
-
-  //Returns Simple Transposed Target Matrix if Downlink or Target Matrix if Uplink.
-  arma::cx_fmat GetMatrixByPathway(bool is_downlink,
-                                   const arma::cx_fmat& matrix_target);
+  virtual arma::cx_fmat GetMatrix(bool is_downlink);
 
   inline FadingType GetFadingType() const { return fading_type_; }
   //Factory function
@@ -44,11 +41,9 @@ class ChannelModel {
   const size_t ues_num_;
   const size_t n_samps_;
 
-  //H Matrix, MUST be of size UEs x BSs
-  arma::cx_fmat h_flat_;
-  // Vector MUST be of size NSubcarriers or OFDMSamples
-  //Not sure this makes sense for all models?
-  std::vector<arma::cx_fmat> h_selective_;
+  // Vector MUST be of size NSubcarriers or OFDMSamples or 1 if flat_fading
+  // Not sure this makes sense for all models?
+  arma::cx_fmat h_;
 
  private:
   FadingType fading_type_;

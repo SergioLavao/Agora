@@ -45,8 +45,9 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
     case ChannelModel::kSelective: {
       //For each Subcarrier or OFDMSample input, multiply H Matrix slice
       for (int h_index = 0; h_index < (int)fmat_src.n_rows; h_index++) {
-        arma::cx_fmat y_ = fmat_src.row(h_index) *
-                           channel_model_->GetMatrix(is_downlink, h_index);
+        arma::cx_fmat y_;
+        channel_model_->UpdateMatrixByIndex( h_index );
+        y_ = fmat_src.row(h_index) * channel_model_->GetMatrix(is_downlink );
         fmat_h.insert_rows(h_index, y_);
       }
       break;
@@ -72,8 +73,6 @@ void Channel::Awgn(const arma::cx_fmat& src, arma::cx_fmat& dst) const {
     const int n_col = src.n_cols;
 
     // Generate noise
-    arma::cx_fmat noise(arma::randn<arma::fmat>(n_row, n_col),
-                        arma::randn<arma::fmat>(n_row, n_col));
 
     // Supposed to be faster
     // arma::fmat x(n_row, n_col, arma::fill::arma::randn);
@@ -81,11 +80,14 @@ void Channel::Awgn(const arma::cx_fmat& src, arma::cx_fmat& dst) const {
     // arma::cx_fmat noise = arma::cx_fmat(x, y);
 
     // Add noise to signal
-    noise *= noise_samp_std_;
-    dst = src + noise;
+    //noise *= noise_samp_std_;
+    dst = src;// + noise;
 
     // Check SNR
     if (kPrintSNRCheck) {
+      arma::cx_fmat noise(arma::randn<arma::fmat>(n_row, n_col),
+                    arma::randn<arma::fmat>(n_row, n_col));
+
       arma::fmat noise_sq = arma::square(abs(noise));
       arma::frowvec noise_vec = arma::mean(noise_sq, 0);
       arma::fmat src_sq = arma::square(abs(src));
