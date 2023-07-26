@@ -73,6 +73,8 @@ void Channel::Awgn(const arma::cx_fmat& src, arma::cx_fmat& dst) const {
     const int n_col = src.n_cols;
 
     // Generate noise
+    arma::cx_fmat noise(arma::randn<arma::fmat>(n_row, n_col),
+                  arma::randn<arma::fmat>(n_row, n_col));
 
     // Supposed to be faster
     // arma::fmat x(n_row, n_col, arma::fill::arma::randn);
@@ -80,14 +82,11 @@ void Channel::Awgn(const arma::cx_fmat& src, arma::cx_fmat& dst) const {
     // arma::cx_fmat noise = arma::cx_fmat(x, y);
 
     // Add noise to signal
-    //noise *= noise_samp_std_;
-    dst = src;// + noise;
+    noise *= noise_samp_std_;
+    dst = src + noise;
 
     // Check SNR
     if (kPrintSNRCheck) {
-      arma::cx_fmat noise(arma::randn<arma::fmat>(n_row, n_col),
-                    arma::randn<arma::fmat>(n_row, n_col));
-
       arma::fmat noise_sq = arma::square(abs(noise));
       arma::frowvec noise_vec = arma::mean(noise_sq, 0);
       arma::fmat src_sq = arma::square(abs(src));
