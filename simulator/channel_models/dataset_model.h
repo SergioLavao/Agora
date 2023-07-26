@@ -9,7 +9,9 @@
 #include "channel_model.h"
 #include "config.h"
 
+#if defined(ENABLE_HDF5)
 #include "H5Cpp.h"
+#endif
 
 class DatasetModel : public ChannelModel {
  public:
@@ -24,10 +26,13 @@ class DatasetModel : public ChannelModel {
   void InstantiateDataset(const std::string& dataset_path);
   
   int dataset_rank;
+
+  #if defined(ENABLE_HDF5)
   H5::DataSet re_dataset;
   H5::DataSet im_dataset;
   H5::DataSpace dataspace;
-
+  #endif
+  
   hsize_t current_frame_num_;
   hsize_t dataset_dims[];
 };
