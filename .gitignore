@@ -32,6 +32,7 @@ build/*
 tags
 out
 files/experiment/*
+/files/log/*
 
 # OS generated files #
 ######################
@@ -64,3 +65,6 @@ CTestTestfile.cmake
 # ##################
 .vscode
 sftp-config.json
+
+rayleigh_flat_dataset.hdf5
+500_512_32_4_mob.hdf5
