@@ -12,16 +12,11 @@
 
 bool kPrintDatasetOutput = true;
 
-#include "gettime.h"
-
 DatasetModel::DatasetModel(size_t bs_ant_num, size_t ue_ant_num,
                            size_t samples_per_sym,
                            const std::string& dataset_path)
     : ChannelModel(bs_ant_num, ue_ant_num, samples_per_sym,
                    ChannelModel::kSelective) {
-
-  //Create an empty H UEs x BSs Matrix 
-  h_ = arma::cx_fmat(ues_num_,bss_num_);
   InstantiateDataset(dataset_path);
 }
 
@@ -34,19 +29,65 @@ void DatasetModel::InstantiateDataset(const std::string& dataset_path) {
   current_frame_num_ = 0;
 
   try {
-
     H5::H5File file(dataset_path, H5F_ACC_RDONLY);
-    re_dataset = file.openDataSet("H_r");
-    im_dataset = file.openDataSet("H_i");
+    H5::DataSet h_r_dataset =
+        file.openDataSet("H_r");  //H Matrix Real part dataset
+    H5::DataSet h_i_dataset =
+        file.openDataSet("H_i");  //H Matrix Imaginary part dataset
 
-    dataspace = re_dataset.getSpace();
-    dataset_rank = dataspace.getSimpleExtentNdims();
-    dataspace.getSimpleExtentDims(dataset_dims, NULL);
+    H5::DataSpace real_dataspace = h_r_dataset.getSpace();
+    H5::DataSpace im_dataspace = h_i_dataset.getSpace();
 
-    frames_num = dataset_dims[0];
-    scs_num = dataset_dims[1];
-    bss_num = dataset_dims[2];
-    ues_num = dataset_dims[3];
+    hsize_t real_dimensions[4];
+    real_dataspace.getSimpleExtentDims(real_dimensions);
+
+    hsize_t im_dimensions[4];
+    im_dataspace.getSimpleExtentDims(im_dimensions);
+
+    //Check the Matrix types dimensions
+    if (im_dimensions[0] != real_dimensions[0] ||
+        im_dimensions[1] != real_dimensions[1] ||
+        im_dimensions[2] != real_dimensions[2]) {
+      AGORA_LOG_ERROR("Invalid Dataset size\n");
+    }
+
+    frames_num = real_dimensions[0];
+    scs_num = real_dimensions[1];
+    bss_num = real_dimensions[2];
+    ues_num = real_dimensions[3];
+
+    //Instantiate the matrices data
+    const size_t data_read_size = frames_num * scs_num * bss_num * ues_num;
+    std::vector<float> real_temp_data(data_read_size);
+    std::vector<float> im_temp_data(data_read_size);
+
+    h_r_dataset.read(real_temp_data.data(), H5::PredType::NATIVE_FLOAT);
+    h_i_dataset.read(im_temp_data.data(), H5::PredType::NATIVE_FLOAT);
+
+    hsize_t data_index = 0;
+
+    for (hsize_t frame = 0; frame < frames_num; frame++) {
+      auto& h_subcarrier_matrices = h_matrices_frames_.emplace_back();
+
+      for (hsize_t subcarrier = 0; subcarrier < scs_num; subcarrier++) {
+        auto& h_mat = h_subcarrier_matrices.emplace_back(ues_num, bss_num);
+
+        for (hsize_t bs = 0; bs < bss_num; bs++) {
+          for (hsize_t ue = 0; ue < ues_num; ue++) {
+            h_mat(ue, bs) = arma::cx_float(real_temp_data.at(data_index),
+                                           im_temp_data.at(data_index));
+            data_index++;
+          }
+        }
+      }
+
+      if (kPrintDatasetOutput) {
+        std::printf(
+            "Dataset Frame = %ld with %ld Subcarriers loaded successfully \n",
+            h_matrices_frames_.size(), h_subcarrier_matrices.size());
+        //Utils::PrintMat( h_matrices_frames_[0][0], "H_");
+      }
+    }
 
   } catch (H5::FileIException& error) {
     AGORA_LOG_ERROR("Read Dataset %s, FileIException - %s\n",
@@ -79,45 +120,7 @@ void DatasetModel::InstantiateDataset(const std::string& dataset_path) {
       dataset_path.c_str(), frames_num, scs_num, bss_num, ues_num);
 }
 
-void DatasetModel::UpdateMatrixByIndex( int sc_index )
-{
-
-  if (current_frame_num_ >= dataset_dims[0]) {
-    AGORA_LOG_ERROR("Invalid frame index selection!\n");
-  }
-
-  if( sc_index >= dataset_dims[1] ) {
-    AGORA_LOG_ERROR("Invalid subcarrier index selection!\n");
-  }
-
-  hsize_t start[dataset_rank] = {current_frame_num_, sc_index, 0, 0};
-  hsize_t count[dataset_rank] = {1, 1, bss_num_, ues_num_};
-  dataspace.selectHyperslab(H5S_SELECT_SET, count, start);
-
-  // Create a buffer to hold the data for the selected slice
-  const size_t data_read_size = bss_num_ * ues_num_;
-  std::vector<float> re_data_buffer(data_read_size);
-  std::vector<float> im_data_buffer(data_read_size);
-
-  H5::DataSpace memspace(dataset_rank, count);
-
-  hsize_t start_mem[dataset_rank] = {0, 0, 0, 0};
-  hsize_t count_mem[dataset_rank] = {1, 1, bss_num_, ues_num_};
-  memspace.selectHyperslab(H5S_SELECT_SET, count_mem, start_mem);
-
-  re_dataset.read(re_data_buffer.data(), H5::PredType::NATIVE_FLOAT, memspace, dataspace);
-  im_dataset.read(im_data_buffer.data(), H5::PredType::NATIVE_FLOAT, memspace, dataspace);
-
-  hsize_t data_index = 0;
-  for (hsize_t bs = 0; bs < bss_num_; bs++) {
-    for (hsize_t ue = 0; ue < ues_num_; ue++) {
-      h_(ue, bs) = arma::cx_float( re_data_buffer.at(data_index), im_data_buffer.at(data_index) );
-      data_index++;
-      }
-  }
-
-}
-
 void DatasetModel::UpdateModel() {
+  h_selective_ = h_matrices_frames_[current_frame_num_];
   current_frame_num_++;
 }
