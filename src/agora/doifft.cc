@@ -54,7 +54,7 @@ EventData DoIFFT::Launch(size_t tag) {
   const size_t ant_id = gen_tag_t(tag).ant_id_;
 
   const bool bypass_iFFT = cfg_->FreqDomainChannel();
-
+  
   if (kDebugPrintInTask) {
     std::printf("In doIFFT thread %d: frame: %zu, symbol: %zu, antenna: %zu\n",
                 tid_, frame_id, symbol_id, ant_id);
