@@ -1,4 +1,4 @@
-[![Build Status](https://falcon.ecg.rice.edu:443/buildStatus/icon?job=github_public_agora%2FPF_Implementation)](https://falcon.ecg.rice.edu:443/job/github_public_agora/job/PF_Implementation/)
+[![Build Status](https://falcon.ecg.rice.edu:443/buildStatus/icon?job=github_public_agora%2FControl-Broadcast-MCS)](https://falcon.ecg.rice.edu:443/job/github_public_agora/job/Control-Broadcast-MCS/)
 
 Agora is a complete software realization of real-time massive MIMO baseband processing. 
 
