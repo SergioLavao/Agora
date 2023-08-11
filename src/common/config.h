@@ -415,9 +415,11 @@ class Config {
   // Public functions
   void GenPilots();
   void GenData();
+
+  //For now, the broadcast slots are the UE Scheduling
   void GenBroadcastSlots(std::vector<std::complex<int16_t>*>& bcast_iq_samps,
-                         std::vector<size_t> ctrl_msg);
-  size_t DecodeBroadcastSlots(const int16_t* const bcast_iq_samps);
+                         std::vector<short> ctrl_msg);
+  std::vector<short> DecodeBroadcastSlots(const int16_t* const bcast_iq_samps);
   void UpdateUlMCS(const nlohmann::json& ul_mcs_params);
   void UpdateDlMCS(const nlohmann::json& dl_mcs_params);
   void UpdateCtrlMCS();
@@ -661,7 +663,7 @@ class Config {
   // responsible for.
   size_t ue_ant_offset_;
 
-  // The total number of OFDM subcarriers, which is a power of two
+  // The total number of OFDM subcarriers,defwhich is a power of two
   size_t ofdm_ca_num_;
 
   // The number of cyclic prefix IQ samples. These are taken from the tail of

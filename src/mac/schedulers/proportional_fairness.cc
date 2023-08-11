@@ -26,7 +26,7 @@ ProportionalFairness::ProportionalFairness( const size_t spatial_streams, const 
     ues_num_(ues_num),
     //selected_action_(0),
     lamda_(0.5F),
-    last_SE_(arma::zeros(4))
+    last_SE_(arma::zeros(ues_num))
 {
     selected_action_ = 0;
     std::printf("============== Proportional Fairness Algorithm ============== \n\n");
@@ -102,8 +102,10 @@ ProportionalFairness::ProportionalFairness( const size_t spatial_streams, const 
 
 }
 
-size_t ProportionalFairness::UpdateScheduler(size_t frame , std::vector<float> csi_)
+size_t ProportionalFairness::UpdateScheduler(size_t frame )
 {
+
+    std::vector<float> csi_ = { 0.68226f,0.678098f,0.671843f,0.68403f };
 
     if( false )//( current_frame != frame )
     {
@@ -203,7 +205,7 @@ void ProportionalFairness::UpdatePF( size_t frame, std::vector<float> csi_ )
         pf_ues_history[idx_] += csi_[idx_];
     }
 
-    for( size_t ue = 0; ue < 4; ue++)
+    for( size_t ue = 0; ue < ues_num_; ue++)
     {
         if(std::find(combination_vector[selected_action_].begin(), combination_vector[selected_action_].end(), ue) != combination_vector[selected_action_].end()) {
             ues_flags_[ue] = true;

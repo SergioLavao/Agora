@@ -259,7 +259,7 @@ struct MacPacketHeaderPacked {
   inline uint16_t Ue() const { return ue_id_; }
   inline uint16_t Crc() const { return crc_; }
   inline uint16_t PayloadLength() const { return datalen_; }
-
+  
   // Modifiers
   inline void Set(const uint16_t &f, const uint16_t &s, const uint16_t &u,
                   const uint16_t &d, const uint16_t &cc) {
@@ -269,6 +269,7 @@ struct MacPacketHeaderPacked {
     datalen_ = d;
     crc_ = cc;
   }
+
   inline void Crc(const uint16_t &crc) { crc_ = crc; }
 
  private:
@@ -292,12 +293,13 @@ struct MacPacketPacked {
   inline uint16_t Crc() const { return header_.Crc(); }
   inline uint16_t PayloadLength() const { return header_.PayloadLength(); }
   inline const unsigned char *Data() const { return data_; };
-
+  
   // Modifiers
   inline void Set(const uint16_t &f, const uint16_t &s, const uint16_t &u,
-                  const uint16_t &data_size) {
+                  const uint16_t &data_size ) {
     header_.Set(f, s, u, data_size, 0);
   }
+
   inline void LoadData(const unsigned char *src_data) {
     std::memcpy(this->data_, src_data, this->PayloadLength());
   }

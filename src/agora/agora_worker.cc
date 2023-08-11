@@ -88,7 +88,7 @@ void AgoraWorker::WorkerThread(int tid) {
       mac_sched_, phy_stats_, stats_);
 
   auto compute_bcast = std::make_unique<DoBroadcast>(
-      config_, tid, buffer_->GetDlSocket(), stats_);
+      config_, tid, buffer_->GetDlSocket(), stats_, mac_sched_);
 
   std::vector<Doer*> computers_vec;
   std::vector<EventType> events_vec;

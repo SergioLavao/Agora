@@ -11,9 +11,8 @@
 
 static constexpr bool kPrintSocketOutput = false;
 
-DoBroadcast::DoBroadcast(Config* in_config, int in_tid,
-                         char* in_dl_socket_buffer, Stats* in_stats_manager)
-    : Doer(in_config, in_tid), dl_socket_buffer_(in_dl_socket_buffer) {
+DoBroadcast::DoBroadcast(Config* in_config, int in_tid,char* in_dl_socket_buffer, Stats* in_stats_manager, MacScheduler* mac_sched)
+    : Doer(in_config, in_tid), dl_socket_buffer_(in_dl_socket_buffer), mac_sched_(mac_sched) {
   duration_stat_ =
       in_stats_manager->GetDurationStat(DoerType::kBroadcast, in_tid);
 }
@@ -25,7 +24,7 @@ void DoBroadcast::GenerateBroadcastSymbols(size_t frame_id) {
   RtAssert(num_control_syms > 0,
            "DoBroadcast: No downlink control symbols are scheduled!");
   std::vector<std::complex<int16_t>*> bcast_iq_samps(num_control_syms);
-  std::vector<size_t> ctrl_data(num_control_syms);
+//  std::vector<size_t> ctrl_data(num_control_syms);
   for (size_t symbol_idx_dl = 0; symbol_idx_dl < num_control_syms;
        symbol_idx_dl++) {
     size_t symbol_id = cfg_->Frame().GetDLControlSymbol(symbol_idx_dl);
@@ -43,11 +42,24 @@ void DoBroadcast::GenerateBroadcastSymbols(size_t frame_id) {
 
     auto* pkt = reinterpret_cast<Packet*>(
         &dl_socket_buffer_[offset * cfg_->DlPacketLength()]);
+
     bcast_iq_samps.at(symbol_idx_dl) =
         reinterpret_cast<std::complex<int16_t>*>(pkt->data_);
-    ///\todo: later ctrl data might include other info
-    ctrl_data.at(symbol_idx_dl) = frame_id + (kUseArgos ? TX_FRAME_DELTA : 0);
+
+    ///\todo: later ctrl data might include other info (MCS, UE Schedule)
+    //SergioL: Can send the MSC Index and the UE Schedule
+    mac_sched_->UpdateSchedule();
   }
+
+  //Set Schedule desision
+  std::vector<short> mcs_schdl_ = { 4, 8, 9, 20 };
+  std::vector<short> ctrl_data(4);
+  std::printf("TX Broadcast UE_Scheduling_MCS = [%d %d %d %d] \n",mcs_schdl_[0],mcs_schdl_[1],mcs_schdl_[2],mcs_schdl_[3]);
+  ctrl_data.at(0) = mcs_schdl_[0];
+  ctrl_data.at(1) = mcs_schdl_[1];
+  ctrl_data.at(2) = mcs_schdl_[2];
+  ctrl_data.at(3) = mcs_schdl_[3];
+
   cfg_->GenBroadcastSlots(bcast_iq_samps, ctrl_data);
 
   if (kPrintSocketOutput) {

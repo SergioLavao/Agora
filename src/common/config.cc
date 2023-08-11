@@ -1681,7 +1681,7 @@ void Config::GenData() {
   ul_encoded_bits.Free();
 }
 
-size_t Config::DecodeBroadcastSlots(const int16_t* const bcast_iq_samps) {
+std::vector<short> Config::DecodeBroadcastSlots(const int16_t* const bcast_iq_samps) {
   size_t start_tsc = GetTime::WorkerRdtsc();
   size_t delay_offset = (ofdm_rx_zero_prefix_client_ + cp_len_) * 2;
   complex_float* bcast_fft_buff = static_cast<complex_float*>(
@@ -1747,12 +1747,19 @@ size_t Config::DecodeBroadcastSlots(const int16_t* const bcast_iq_samps) {
   if (kDebugPrintInTask) {
     std::printf("DecodeBroadcast completed in %2.2f us\n", duration);
   }
-  return (reinterpret_cast<size_t*>(decode_buff.data()))[0];
+
+  std::vector<short> schedule_map(ue_ant_num_);
+  for( int i = 0; i < ue_ant_num_; i ++ )
+  {
+    schedule_map.at(i) = reinterpret_cast<short*>(decode_buff.data())[i];
+  }
+  
+  return schedule_map;
 }
 
 void Config::GenBroadcastSlots(
     std::vector<std::complex<int16_t>*>& bcast_iq_samps,
-    std::vector<size_t> ctrl_msg) {
+    std::vector<short> ctrl_msg) {
   ///\todo enable a vector of bytes to TX'ed in each symbol
   assert(bcast_iq_samps.size() == this->frame_.NumDlControlSyms());
   const size_t start_tsc = GetTime::WorkerRdtsc();
@@ -1764,7 +1771,7 @@ void Config::GenBroadcastSlots(
   InitModulationTable(dl_bcast_mod_table, dl_bcast_mod_order_bits_);
 
   for (size_t i = 0; i < this->frame_.NumDlControlSyms(); i++) {
-    std::memcpy(bcast_bits_buffer.data(), ctrl_msg.data(), sizeof(size_t));
+    std::memcpy(bcast_bits_buffer.data(), ctrl_msg.data(), sizeof(short) * ctrl_msg.size());//Man... 
 
     const auto coded_bits_ptr = DataGenerator::GenCodeblock(
         dl_bcast_ldpc_config_, &bcast_bits_buffer.at(0), num_bcast_bytes,

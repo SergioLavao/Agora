@@ -27,7 +27,8 @@ TEST(TestControl, VerifyCorrectness) {
             2 * cfg->SampsPerSymbol() * sizeof(int16_t)));
   }
 
-  std::vector<size_t> msg;
+  //std::vector<size_t> msg;
+  std::vector<short> msg;
   msg.push_back(1051);
   cfg->GenBroadcastSlots(data_buffer, msg);
 
@@ -48,9 +49,11 @@ TEST(TestControl, VerifyCorrectness) {
     CommsLib::Ifft2tx(bcast_fft_buff, data_buffer.at(i), cfg->OfdmCaNum(),
                       cfg->OfdmTxZeroPrefix(), cfg->CpLen(), 1.0);
   }
+
   auto decoded_msg =
       cfg->DecodeBroadcastSlots(reinterpret_cast<int16_t*>(data_buffer[0]));
-  ASSERT_EQ(msg.at(0), decoded_msg);
+  //ASSERT_EQ(msg.at(0), decoded_msg);
+  ASSERT_EQ(msg.at(0), decoded_msg[0]);
   for (size_t i = 0; i < cfg->Frame().NumDlControlSyms(); i++) {
     FreeBuffer1d(&data_buffer.at(i));
   }

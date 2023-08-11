@@ -108,6 +108,7 @@ std::vector<Packet*> TxRxWorkerClientSim::RecvEnqueue(size_t interface_id) {
   ssize_t rx_bytes =
       udp_comm_.at(interface_id)
           ->Recv(reinterpret_cast<std::byte*>(pkt), packet_length);
+
   if (rx_bytes == static_cast<ssize_t>(packet_length)) {
     if (kDebugPrintInTask) {
       AGORA_LOG_INFO(
@@ -116,12 +117,20 @@ std::vector<Packet*> TxRxWorkerClientSim::RecvEnqueue(size_t interface_id) {
     }
     size_t symbol_id = pkt->symbol_id_;
     if (Configuration()->GetSymbolType(symbol_id) == SymbolType::kControl) {
-      size_t ctrl_frame_id = Configuration()->DecodeBroadcastSlots(pkt->data_);
-      if (ctrl_frame_id != pkt->frame_id_) {
-        AGORA_LOG_ERROR(
-            "RecvEnqueue: Ctrl channel frame_id mismatch error (%zu/%zu)!\n",
-            ctrl_frame_id, pkt->frame_id_);
+      //In the control symbol should add more parameters, such as frame, MCS and Shedule/Action
+      //For now assume that is the IS UE SCHEDULED
+      //SergioL: Recieve the control symbol data
+      std::vector<short> control_data = Configuration()->DecodeBroadcastSlots(pkt->data_);
+
+      std::printf(" RX Control Sym Data At UE %d =[ ", pkt->ant_id_);
+
+      for( int i = 0; i < control_data.size(); i ++ )
+      {
+        std::printf("%d ", control_data[i]);
       }
+
+      std::printf(" ] \n");
+
       ReturnRxPacket(rx_placement);
     } else {
       // Push kPacketRX event into the queue.

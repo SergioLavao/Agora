@@ -8,6 +8,8 @@
 #include "utils_ldpc.h"
 
 static constexpr size_t kUdpRxBufferPadding = 2048u;
+static constexpr char kDefaultLogFilename[] = "./files/log/mac_log_server";
+//static constexpr char kDefaultLogFilename[] = "files/log/mac_log_client";
 
 MacThreadBaseStation::MacThreadBaseStation(
     Config* cfg, size_t core_offset,
@@ -29,7 +31,7 @@ MacThreadBaseStation::MacThreadBaseStation(
   } else {
     log_filename_ = kDefaultLogFilename;
   }
-  log_file_ = std::fopen(log_filename_.c_str(), "w");
+  log_file_ = std::fopen("./files/log/MAC_BS_LOG.txt", "w");
   RtAssert(log_file_ != nullptr, "Failed to open MAC log file");
 
   AGORA_LOG_INFO(
@@ -86,7 +88,7 @@ void MacThreadBaseStation::ProcessRxFromPhy() {
     AGORA_LOG_TRACE("MacThreadBaseStation: MAC thread event kSNRReport\n");
     ProcessSnrReportFromPhy(event);
   }
-}
+} 
 
 void MacThreadBaseStation::ProcessSnrReportFromPhy(EventData event) {
   const size_t ue_id = gen_tag_t(event.tags_[0]).ue_id_;
@@ -97,7 +99,7 @@ void MacThreadBaseStation::ProcessSnrReportFromPhy(EventData event) {
   float snr;
   std::memcpy(&snr, &event.tags_[1], sizeof(float));
   server_.snr_[ue_id].push(snr);
-}
+} 
 
 void MacThreadBaseStation::SendRanConfigUpdate(EventData /*event*/) {
   RanConfig rc;
@@ -256,6 +258,7 @@ void MacThreadBaseStation::ProcessCodeblocksFromPhy(EventData event) {
 }
 
 void MacThreadBaseStation::SendControlInformation() {
+
   // send RAN control information UE
   RBIndicator ri;
   ri.ue_id_ = next_radio_id_;
@@ -265,6 +268,7 @@ void MacThreadBaseStation::SendControlInformation() {
 
   // update RAN config within Agora
   SendRanConfigUpdate(EventData(EventType::kRANUpdate));
+
 }
 
 void MacThreadBaseStation::ProcessUdpPacketsFromApps() {

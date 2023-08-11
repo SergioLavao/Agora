@@ -15,10 +15,10 @@
 
 class ProportionalFairness {
  public:
-  ProportionalFairness( const size_t spatial_streams, const size_t bss_num, const size_t ues_num, size_t ofdm_ca_num_ );
+  ProportionalFairness( const size_t spatial_streams, const size_t bss_num, const size_t ues_num, size_t ofdm_data_num_ );
   ~ProportionalFairness() = default;
 
-  size_t UpdateScheduler(size_t frame , std::vector<float> csi_);
+  size_t UpdateScheduler( size_t frame );
 
   //Possible Proportional Fairness actions N_Combination_R
   size_t actions_num_;

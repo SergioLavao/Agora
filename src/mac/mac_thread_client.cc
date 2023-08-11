@@ -10,6 +10,7 @@
 #include "utils_ldpc.h"
 
 static constexpr size_t kUdpRxBufferPadding = 2048u;
+static constexpr char kDefaultLogFilename[] = "./files/log/mac_log_client";
 
 MacThreadClient::MacThreadClient(
     Config* cfg, size_t core_offset,
@@ -31,7 +32,7 @@ MacThreadClient::MacThreadClient(
   } else {
     log_filename_ = kDefaultLogFilename;
   }
-  log_file_ = std::fopen(log_filename_.c_str(), "w");
+  log_file_ = std::fopen("./files/log/MAC_UE_LOG.txt", "w");
   RtAssert(log_file_ != nullptr, "Failed to open MAC log file");
 
   AGORA_LOG_INFO("MacThreadClient: Frame duration %.2f ms, tsc_delta %zu\n",
@@ -256,6 +257,7 @@ void MacThreadClient::ProcessCodeblocksFromPhy(EventData event) {
 }
 
 void MacThreadClient::ProcessControlInformation() {
+  //Recieves the control information from MacThreadBaseStation::SendControlInformation()
   std::memset(&udp_control_buf_[0], 0, udp_control_buf_.size());
   ssize_t ret =
       udp_control_channel_->Recv(&udp_control_buf_[0], udp_control_buf_.size());
@@ -269,7 +271,8 @@ void MacThreadClient::ProcessControlInformation() {
 
   RtAssert(static_cast<size_t>(ret) == sizeof(RBIndicator));
 
-  const auto* ri = reinterpret_cast<RBIndicator*>(&udp_control_buf_[0]);
+  const RBIndicator* ri = reinterpret_cast<RBIndicator*>(&udp_control_buf_[0]);
+
   ProcessUdpPacketsFromApps(*ri);
 }
 
@@ -376,7 +379,7 @@ void MacThreadClient::ProcessUdpPacketsFromApps(RBIndicator ri) {
 }
 
 void MacThreadClient::ProcessUdpPacketsFromAppsClient(const char* payload,
-                                                      RBIndicator /*ri*/) {
+                                                      RBIndicator ri) {
   const size_t num_mac_packets_per_frame =
       cfg_->MacPacketsPerframe(Direction::kUplink);
   const size_t num_pilot_symbols = cfg_->Frame().ClientUlPilotSymbols();
@@ -461,7 +464,7 @@ void MacThreadClient::ProcessUdpPacketsFromAppsClient(const char* payload,
     const size_t dest_pkt_offset = ((radio_buf_id * num_mac_packets_per_frame) +
                                     (symbol_idx - num_pilot_symbols)) *
                                    cfg_->MacPacketLength(Direction::kUplink);
-
+;
     auto* pkt = reinterpret_cast<MacPacketPacked*>(
         &(*client_.ul_bits_buffer_)[next_radio_id_][dest_pkt_offset]);
 
@@ -479,7 +482,7 @@ void MacThreadClient::ProcessUdpPacketsFromAppsClient(const char* payload,
 
     if (kLogMacPackets) {
       std::stringstream ss;
-
+      
       ss << "MacThreadClient: created packet frame " << next_tx_frame_id_
          << ", pkt " << pkt_id << ", size "
          << cfg_->MacPayloadMaxLength(Direction::kUplink) << " radio buff id "

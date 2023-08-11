@@ -367,7 +367,7 @@ void PhyUe::Start() {
             rx->Use();
             recorders_.at(0)->DispatchWork(event);
           }
-
+          
           const size_t frame_id = pkt->frame_id_;
           const size_t symbol_id = pkt->symbol_id_;
           const size_t ant_id = pkt->ant_id_;
@@ -670,6 +670,7 @@ void PhyUe::Start() {
 #if defined(ENABLE_RB_IND)
           config_->UpdateModCfgs(pkt->rb_indicator_.mod_order_bits_);
 #endif
+
           if (kDebugPrintPacketsFromMac) {
 #if defined(ENABLE_RB_IND)
             AGORA_LOG_INFO(
