@@ -51,10 +51,11 @@ void DoBroadcast::GenerateBroadcastSymbols(size_t frame_id) {
     mac_sched_->UpdateSchedule();
   }
 
-  //Set Schedule desision
-  std::vector<short> mcs_schdl_ = { 4, 8, 9, 20 };
+  //Set Schedule desision //Clean up
+  //SergioL
+  std::vector<short> mcs_schdl_ = { 4, 8, 1, 9 };
   std::vector<short> ctrl_data(4);
-  std::printf("TX Broadcast UE_Scheduling_MCS = [%d %d %d %d] \n",mcs_schdl_[0],mcs_schdl_[1],mcs_schdl_[2],mcs_schdl_[3]);
+  std::printf("TX Broadcast UE_Scheduling_MCS = [%d %d] \n",mcs_schdl_[0],mcs_schdl_[1]);
   ctrl_data.at(0) = mcs_schdl_[0];
   ctrl_data.at(1) = mcs_schdl_[1];
   ctrl_data.at(2) = mcs_schdl_[2];

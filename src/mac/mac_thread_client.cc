@@ -174,7 +174,7 @@ void MacThreadClient::ProcessCodeblocksFromPhy(EventData event) {
     if ((static_cast<size_t>(pkt->PayloadLength()) <= dest_packet_size) &&
         ((pkt->Symbol() >= data_symbol_index_start) &&
          (pkt->Symbol() <= data_symbol_index_end)) &&
-        (pkt->Ue() <= cfg_->UeAntNum())) {
+        (pkt->Ue() <= cfg_->SpatialStreamsNum())) {
       auto crc = static_cast<uint16_t>(
           crc_obj_->CalculateCrc24(pkt->Data(), pkt->PayloadLength()) & 0xFFFF);
 
@@ -429,12 +429,14 @@ void MacThreadClient::ProcessUdpPacketsFromAppsClient(const char* payload,
   // We've received bits for the uplink.
   size_t& radio_buf_id = client_.ul_bits_buffer_id_[next_radio_id_];
 
+  //MAC Multiple user Problem might be here
   if ((*client_.ul_bits_buffer_status_)[next_radio_id_][radio_buf_id] == 1) {
     std::fprintf(
         stderr,
         "MacThreadClient: UDP RX buffer full, buffer ID: %zu. Dropping "
         "rx frame data\n",
         radio_buf_id);
+    //SergioL: Is returning when MAC multiple UEs here
     return;
   }
 
@@ -518,6 +520,7 @@ void MacThreadClient::ProcessUdpPacketsFromAppsClient(const char* payload,
   radio_buf_id = (radio_buf_id + 1) % kFrameWnd;
   // Might be unnecessary now.
   next_radio_id_ = (next_radio_id_ + 1) % cfg_->UeAntNum();
+  //next_radio_id_ = (next_radio_id_ + 1) % cfg_->SpatialStreamsNum();
   if (next_radio_id_ == 0) {
     next_tx_frame_id_++;
   }

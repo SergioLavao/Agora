@@ -1,8 +1,8 @@
 {
   /* General Settings */
   "cells": 1,
-  "bs_radio_num": 8,
-  "ue_radio_num": 1,
+  "bs_radio_num": 32,
+  "ue_radio_num": 4,
   "beamsweep": true,
   "beacon_antenna": 0,
   /* Waveform Parameters */
@@ -21,9 +21,10 @@
   "rate": 7.68e6,
   /* Frame definition */
   "frame_schedule": [
-    "BPGUUUUG"
+    "BPPPPGUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
   ],
   "client_ul_pilot_syms": 2,
+  "spatial_streams" : 2,
   /* compute configuration */
   "bs_mac_rx_port": 8070,
   "bs_mac_tx_port": 8080,

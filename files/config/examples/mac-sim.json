@@ -10,13 +10,15 @@
       "modulation": "64QAM",
       "code_rate": 0.333
   },
+  /*"BPGGGGGDDDDGGGGGG"*/
+  /*"BPUUUDDDD"*/
   "frame_schedule": [
-    "BPSUUUDDDD"
+    "BPSUUUUDDDDDGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
   ],
+  "spatial_streams" : 2,
   "ue_radio_num": 2,
-  "bs_radio_num": 8,
+  "bs_radio_num": 16,
   "freq_orthogonal_pilot": true,
- /* "symbol_num_perframe": 70,*/
   "client_ul_pilot_syms": 2,
   "ul_data_symbol_start": 3,
   "ul_symbol_num_perframe": 3,
@@ -26,13 +28,12 @@
   "beacon_position": 0,
   "mac_rx_port": 8070,
   "mac_tx_port": 8080,
-  "core_offset": 16,
+  "core_offset": 18,
   "worker_thread_num": 8,
-  "socket_thread_num": 1,
+  "socket_thread_num": 4,
   "ue_mac_rx_port": 9070,
   "ue_mac_tx_port": 9080,
   "ue_core_offset": 12,
-  "ue_worker_thread_num": 1,
-  "ue_socket_thread_num": 1,
-  "max_frame": 1000
+  "ue_worker_thread_num": 4,
+  "ue_socket_thread_num": 4/*,"max_frame": 1000*/
 }

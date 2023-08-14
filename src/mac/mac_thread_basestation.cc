@@ -433,6 +433,7 @@ void MacThreadBaseStation::ProcessUdpPacketsFromAppsBs(const char* payload) {
         "MacThreadBasestation: UDP RX buffer full, buffer ID: %zu. Dropping "
         "rx frame data\n",
         radio_buf_id);
+    //SergioL: Is returning when MAC multiple UEs here
     return;
   }
 

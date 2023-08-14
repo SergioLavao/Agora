@@ -283,6 +283,8 @@ struct MacPacketHeaderPacked {
 #endif
 };
 
+
+
 struct MacPacketPacked {
  public:
   static constexpr size_t kHeaderSize = sizeof(MacPacketHeaderPacked);
@@ -293,7 +295,9 @@ struct MacPacketPacked {
   inline uint16_t Crc() const { return header_.Crc(); }
   inline uint16_t PayloadLength() const { return header_.PayloadLength(); }
   inline const unsigned char *Data() const { return data_; };
+//  RBIndicator rb_indicator_;  // RAN scheduling details for PHY
   
+
   // Modifiers
   inline void Set(const uint16_t &f, const uint16_t &s, const uint16_t &u,
                   const uint16_t &data_size ) {

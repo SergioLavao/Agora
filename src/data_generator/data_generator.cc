@@ -803,7 +803,7 @@ void DataGenerator::GenMacData(MacPacketPacked* mac, size_t ue_id) {
     if (profile_ == Profile::kRandom) {
       mac->DataPtr()[i] = static_cast<int8_t>(fast_rand_.NextU32());
     } else if (profile_ == Profile::kProfile123) {
-      mac->DataPtr()[i] = 1 + (ue_id * 3) + (i % 3);
+      mac->DataPtr()[i]=  1 + (ue_id * 3) + (i % 3);
     }
   }
 }

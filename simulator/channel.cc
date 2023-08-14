@@ -30,9 +30,9 @@ Channel::Channel(const Config* const config, std::string& in_channel_type,
   noise_samp_std_ = std::sqrt(kMeanChannelGain / (snr_lin * 2.0f));
 
   //SergioL: Static channel
-  arma::fmat rmat(4, 32, arma::fill::randn);
-  arma::fmat imat(4, 32, arma::fill::randn);
-
+  arma::fmat rmat(2, 16, arma::fill::randn);
+  arma::fmat imat(2, 16, arma::fill::randn);
+  
   h__ = arma::cx_fmat(rmat, imat);
 
   std::cout << "Noise level to be used is: " << std::fixed << std::setw(5)

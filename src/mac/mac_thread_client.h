@@ -32,7 +32,7 @@ class MacThreadClient {
 
   // Maximum number of outstanding UDP packets per UE that we allocate recv()
   // buffer space for
-  static constexpr size_t kMaxPktsPerUE = 64;
+  static constexpr size_t kMaxPktsPerUE = 128;//64;
 
   // Length of SNR moving average window
   // TODO: map this to time?
