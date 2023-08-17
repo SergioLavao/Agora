@@ -20,7 +20,7 @@ static const std::string kMacSendFromAddress = "127.0.0.1";
 static constexpr uint16_t kMacSendFromPort = 0;
 
 //SergioL For VideoStream
-#define USE_UDP_DATA_SOURCE
+//#define USE_UDP_DATA_SOURCE
 static constexpr bool kDebugPrintSender = false;
 static constexpr size_t kFrameLoadAdvance = 10;
 static constexpr size_t kBufferInit = 10;
@@ -493,13 +493,25 @@ void* MacSender::DataUpdateThread(size_t tid, size_t num_data_sources) {
     if(source == 0)
     {
       std::printf("DATA SOURCE 0 \n");
-      data_filename_ = "./incredibles_script.txt";
+      data_filename_ = "./1.txt";
       sources.emplace_back(std::make_unique<FileReceiver>(data_filename_));
     }
     if(source == 1 )
     {
       std::printf("DATA SOURCE 1 \n");
-      data_filename_ = "./shrek_script.txt";
+      data_filename_ = "./2.txt";
+      sources.emplace_back(std::make_unique<FileReceiver>(data_filename_));
+    }
+    if(source == 2 )
+    {
+      std::printf("DATA SOURCE 2 \n");
+      data_filename_ = "./3.txt";
+      sources.emplace_back(std::make_unique<FileReceiver>(data_filename_));
+    }
+    if(source == 3 )
+    {
+      std::printf("DATA SOURCE 3 \n");
+      data_filename_ = "./4.txt";
       sources.emplace_back(std::make_unique<FileReceiver>(data_filename_));
     }
     //sources.emplace_back(std::make_unique<FileReceiver>(data_filename_));

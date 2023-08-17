@@ -39,10 +39,18 @@ class ChannelModel {
       const Config* const config, std::string& channel_type,
       std::string& dataset_path);
 
+  arma::cx_fmat GetDownlinkChannelMatrix(){ return h__.st();}
+  arma::cx_fmat GetUplinkChannelMatrix(){ return h__;}
+
  protected:
   const size_t bss_num_;
   const size_t ues_num_;
   const size_t n_samps_;
+
+  size_t n_dataset_max_frames_;
+
+  //SergioL: Remove later
+  arma::cx_fmat h__;
 
   //H Matrix, MUST be of size UEs x BSs
   arma::cx_fmat h_flat_;

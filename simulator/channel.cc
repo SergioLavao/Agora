@@ -47,6 +47,8 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
 
   if (is_newChan) {
     channel_model_->UpdateModel();
+    h__st = channel_model_->GetDownlinkChannelMatrix();
+    h__ = channel_model_->GetUplinkChannelMatrix();
   }
 
   if( is_downlink )
@@ -94,8 +96,7 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
   */
 
   fmat_dst = fmat_h;
-  // Add noise
-//  Awgn(fmat_h, fmat_dst);
+  //Awgn(fmat_h, fmat_dst);
 
   if (kPrintChannelOutput) {
     Utils::PrintMat(fmat_dst, "H");

@@ -112,6 +112,8 @@ void DatasetModel::InstantiateDataset(const std::string& dataset_path) {
     throw error;
   }
 
+  n_dataset_max_frames_ = frames_num;
+
   AGORA_LOG_INFO(
       "Dataset Succesfully loaded\n"
       "Path: %s \n"
@@ -123,11 +125,11 @@ void DatasetModel::InstantiateDataset(const std::string& dataset_path) {
 }
 
 void DatasetModel::UpdateModel() {
-  h_flat_ = h_matrices_frames_[current_frame_num_][0];
-  //h_selective_ = h_matrices_frames_[current_frame_num_];
+  
+  h__ = h_matrices_frames_[current_frame_num_][0];
   current_frame_num_++;
 
-  if( current_frame_num_ >= 5)
+  if( current_frame_num_ >= n_dataset_max_frames_)
   {
     current_frame_num_ = 0;
   }

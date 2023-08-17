@@ -68,3 +68,5 @@ sftp-config.json
 
 rayleigh_flat_dataset.hdf5
 LOS_INCREIBLES_250kbps.mp4
+corr_2clu_static_512_32_4.hdf5
+uncorr_static_512_32_4.hdf5
