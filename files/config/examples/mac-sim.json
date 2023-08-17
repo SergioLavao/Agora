@@ -13,11 +13,11 @@
   /*"BPGGGGGDDDDGGGGGG"*/
   /*"BPUUUDDDD"*/
   "frame_schedule": [
-    "BPSUUUUDDDDDGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
+  "BPUUUDDDDDDDDDDDDDDDDDDDDDDDDD"
   ],
-  "spatial_streams" : 2,
-  "ue_radio_num": 2,
-  "bs_radio_num": 16,
+  "spatial_streams" : 1,
+  "ue_radio_num": 1,
+  "bs_radio_num": 8,
   "freq_orthogonal_pilot": true,
   "client_ul_pilot_syms": 2,
   "ul_data_symbol_start": 3,

@@ -2,7 +2,7 @@
 import numpy as np
 import h5py
 
-frames = 500
+frames = 2
 sub_carrier_num = 512
 
 ues = 4

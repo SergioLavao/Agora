@@ -16,6 +16,7 @@ static constexpr hsize_t kNoiseVectorSize = 100;
 
 //SergioL: Static channel
 arma::cx_fmat h__;
+arma::cx_fmat h__st;
 
 Channel::~Channel() = default;
 
@@ -30,10 +31,11 @@ Channel::Channel(const Config* const config, std::string& in_channel_type,
   noise_samp_std_ = std::sqrt(kMeanChannelGain / (snr_lin * 2.0f));
 
   //SergioL: Static channel
-  arma::fmat rmat(2, 16, arma::fill::randn);
-  arma::fmat imat(2, 16, arma::fill::randn);
+  arma::fmat rmat(cfg_->UeAntNum(), cfg_->BsAntNum(), arma::fill::randn);
+  arma::fmat imat(cfg_->UeAntNum(), cfg_->BsAntNum(), arma::fill::randn);
   
   h__ = arma::cx_fmat(rmat, imat);
+  h__st = h__.st();
 
   std::cout << "Noise level to be used is: " << std::fixed << std::setw(5)
             << std::setprecision(2) << noise_samp_std_ << std::endl;
@@ -44,16 +46,25 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
   arma::cx_fmat fmat_h;
 
   if (is_newChan) {
-    //SergioL: Static channel
-    //channel_model_->UpdateModel();
+    channel_model_->UpdateModel();
   }
 
+  if( is_downlink )
+  {
+    fmat_h = fmat_src * h__st;//channel_model_->GetMatrix(is_downlink);
+  }
+  else
+  {
+    fmat_h = fmat_src * h__;//channel_model_->GetMatrix(is_downlink);
+  }     
+
+  /*
   switch (channel_model_->GetFadingType()) {
     case ChannelModel::kFlat: {
       //SergioL: Static channel 
       if( is_downlink )
       {
-        fmat_h = fmat_src * h__.st();//channel_model_->GetMatrix(is_downlink);
+        fmat_h = fmat_src * h__st;//channel_model_->GetMatrix(is_downlink);
       }
       else
       {
@@ -80,9 +91,11 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
       break;
     }
   }
+  */
 
+  fmat_dst = fmat_h;
   // Add noise
-  Awgn(fmat_h, fmat_dst);
+//  Awgn(fmat_h, fmat_dst);
 
   if (kPrintChannelOutput) {
     Utils::PrintMat(fmat_dst, "H");

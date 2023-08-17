@@ -111,6 +111,7 @@ void MacThreadClient::ProcessSnrReportFromPhy(EventData event) {
   server_.snr_[ue_id].push(snr);
 }
 
+//SergioL Important, here we recieve the data and we should send UDP comm to VLc
 void MacThreadClient::ProcessCodeblocksFromPhy(EventData event) {
   assert(event.event_type_ == EventType::kPacketToMac);
 
@@ -214,6 +215,7 @@ void MacThreadClient::ProcessCodeblocksFromPhy(EventData event) {
   if (server_.n_filled_in_frame_.at(ue_id) == mac_data_bytes_per_frame) {
     server_.n_filled_in_frame_.at(ue_id) = 0;
     /// Spot to be optimized #2 -- left shift data over to remove padding
+    //bool shifted = false;
     bool shifted = false;
     size_t src_offset = 0;
     size_t dest_offset = 0;
@@ -231,7 +233,11 @@ void MacThreadClient::ProcessCodeblocksFromPhy(EventData event) {
       src_offset += cfg_->MacPayloadMaxLength(Direction::kDownlink);
     }
 
+    //SergioL: UE UDP
+    std::printf("\n\n\n ------------------ UE %ld ------------------\n", ue_id);
+
     if (dest_offset > 0) {
+      std::printf("====================== UDP DATA SENT ====================== \n\n\n");
       udp_comm_->Send(kMacRemoteHostname, cfg_->UeMacTxPort() + ue_id,
                       &server_.frame_data_.at(ue_id).at(0), dest_offset);
     }

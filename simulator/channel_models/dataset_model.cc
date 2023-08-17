@@ -12,11 +12,13 @@
 
 bool kPrintDatasetOutput = true;
 
+constexpr bool kFastDatasetModel = true;
+
 DatasetModel::DatasetModel(size_t bs_ant_num, size_t ue_ant_num,
                            size_t samples_per_sym,
                            const std::string& dataset_path)
     : ChannelModel(bs_ant_num, ue_ant_num, samples_per_sym,
-                   ChannelModel::kSelective) {
+                   ChannelModel::kFlat) {
   InstantiateDataset(dataset_path);
 }
 
@@ -121,6 +123,13 @@ void DatasetModel::InstantiateDataset(const std::string& dataset_path) {
 }
 
 void DatasetModel::UpdateModel() {
-  h_selective_ = h_matrices_frames_[current_frame_num_];
+  h_flat_ = h_matrices_frames_[current_frame_num_][0];
+  //h_selective_ = h_matrices_frames_[current_frame_num_];
   current_frame_num_++;
+
+  if( current_frame_num_ >= 5)
+  {
+    current_frame_num_ = 0;
+  }
+
 }

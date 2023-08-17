@@ -19,7 +19,8 @@
 static const std::string kMacSendFromAddress = "127.0.0.1";
 static constexpr uint16_t kMacSendFromPort = 0;
 
-//#define USE_UDP_DATA_SOURCE
+//SergioL For VideoStream
+#define USE_UDP_DATA_SOURCE
 static constexpr bool kDebugPrintSender = false;
 static constexpr size_t kFrameLoadAdvance = 10;
 static constexpr size_t kBufferInit = 10;
@@ -136,7 +137,8 @@ MacSender::MacSender(Config* cfg, std::string& data_filename,
 
   // Add the data update thread (background data reader), need to add a variable
   // for the update source number
-  static constexpr size_t kUpdateSourcePerThread = 1;
+  // SergioL
+  static constexpr size_t kUpdateSourcePerThread = 4;
   for (size_t update_threads = 0; update_threads < update_thread_num_;
        update_threads++) {
     data_update_queue_.emplace_back(
@@ -480,11 +482,27 @@ void* MacSender::DataUpdateThread(size_t tid, size_t num_data_sources) {
   for (size_t source = 0; source < num_data_sources; source++) {
 #if defined(USE_UDP_DATA_SOURCE)
     // Assumes that the num_data_sources are spread evenly between threads
+    size_t port = VideoReceiver::kVideoStreamRxPort + (tid * num_data_sources) + source;
+    std::printf("UPD VIDEO PORT RX AT %ld \n" , port);
     sources.emplace_back(std::make_unique<VideoReceiver>(
         VideoReceiver::kVideoStreamRxPort + (tid * num_data_sources) + source));
 #else
+    //Later you can check me :) 🤓
     ///\todo need a list of file names for this
-    sources.emplace_back(std::make_unique<FileReceiver>(data_filename_));
+    std::printf("SOURCE FROM %ld \n", source);
+    if(source == 0)
+    {
+      std::printf("DATA SOURCE 0 \n");
+      data_filename_ = "./incredibles_script.txt";
+      sources.emplace_back(std::make_unique<FileReceiver>(data_filename_));
+    }
+    if(source == 1 )
+    {
+      std::printf("DATA SOURCE 1 \n");
+      data_filename_ = "./shrek_script.txt";
+      sources.emplace_back(std::make_unique<FileReceiver>(data_filename_));
+    }
+    //sources.emplace_back(std::make_unique<FileReceiver>(data_filename_));
 #endif
   }
 
@@ -496,6 +514,7 @@ void* MacSender::DataUpdateThread(size_t tid, size_t num_data_sources) {
         auto tag_for_ue = gen_tag_t::FrmSymUe(((gen_tag_t)tag).frame_id_,
                                               ((gen_tag_t)tag).symbol_id_, i);
         size_t ant_source = i % num_data_sources;
+        std::printf("Update TX Buffer at UE %ld \n", i);
         UpdateTxBuffer(sources.at(ant_source).get(), tag_for_ue);
       }
       buffer_updates++;

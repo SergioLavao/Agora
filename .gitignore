@@ -65,3 +65,6 @@ CTestTestfile.cmake
 # ##################
 .vscode
 sftp-config.json
+
+rayleigh_flat_dataset.hdf5
+LOS_INCREIBLES_250kbps.mp4
