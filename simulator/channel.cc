@@ -33,7 +33,7 @@ Channel::Channel(const Config* const config, std::string& in_channel_type,
   //SergioL: Static channel
   arma::fmat rmat(cfg_->UeAntNum(), cfg_->BsAntNum(), arma::fill::randn);
   arma::fmat imat(cfg_->UeAntNum(), cfg_->BsAntNum(), arma::fill::randn);
-  
+
   h__ = arma::cx_fmat(rmat, imat);
   h__st = h__.st();
 
@@ -53,12 +53,12 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
 
   if( is_downlink )
   {
-    fmat_h = fmat_src * h__st;//channel_model_->GetMatrix(is_downlink);
+    fmat_h = fmat_src * h__st;
   }
   else
   {
-    fmat_h = fmat_src * h__;//channel_model_->GetMatrix(is_downlink);
-  }     
+    fmat_h = fmat_src * h__;
+  } 
 
   /*
   switch (channel_model_->GetFadingType()) {
@@ -95,8 +95,8 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
   }
   */
 
-  fmat_dst = fmat_h;
-  //Awgn(fmat_h, fmat_dst);
+  //fmat_dst = fmat_h;
+  Awgn(fmat_h, fmat_dst);
 
   if (kPrintChannelOutput) {
     Utils::PrintMat(fmat_dst, "H");

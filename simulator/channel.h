@@ -33,6 +33,11 @@ class Channel {
   double channel_snr_db_;
   double noise_samp_std_;
 
+  //SergioL Temp
+  arma::cx_fmat const_noise_dl;
+  arma::cx_fmat const_noise_ul;
+
+
   std::unique_ptr<ChannelModel> channel_model_;
 };
 
