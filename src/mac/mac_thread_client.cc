@@ -111,13 +111,14 @@ void MacThreadClient::ProcessSnrReportFromPhy(EventData event) {
   server_.snr_[ue_id].push(snr);
 }
 
-//SergioL Important, here we recieve the data and we should send UDP comm to VLc
 void MacThreadClient::ProcessCodeblocksFromPhy(EventData event) {
   assert(event.event_type_ == EventType::kPacketToMac);
 
   const size_t frame_id = gen_tag_t(event.tags_[0]).frame_id_;
   const size_t symbol_id = gen_tag_t(event.tags_[0]).symbol_id_;
   const size_t ue_id = gen_tag_t(event.tags_[0]).ue_id_;
+
+  std::printf("=========== ProcessCodeblocksFromPhy EVENT ON UE %zu ===============\n",ue_id);
 
   // Helper variables (changes with bs / user)
   const size_t num_pilot_symbols = cfg_->Frame().ClientDlPilotSymbols();
@@ -237,7 +238,8 @@ void MacThreadClient::ProcessCodeblocksFromPhy(EventData event) {
     std::printf("\n\n\n ------------------ UE %ld ------------------\n", ue_id);
 
     if (dest_offset > 0) {
-      std::printf("====================== UDP DATA SENT ====================== \n\n\n");
+      std::printf(
+          "====================== UDP DATA SENT ====================== \n\n\n");
       udp_comm_->Send(kMacRemoteHostname, cfg_->UeMacTxPort() + ue_id,
                       &server_.frame_data_.at(ue_id).at(0), dest_offset);
     }
@@ -472,7 +474,7 @@ void MacThreadClient::ProcessUdpPacketsFromAppsClient(const char* payload,
     const size_t dest_pkt_offset = ((radio_buf_id * num_mac_packets_per_frame) +
                                     (symbol_idx - num_pilot_symbols)) *
                                    cfg_->MacPacketLength(Direction::kUplink);
-;
+    ;
     auto* pkt = reinterpret_cast<MacPacketPacked*>(
         &(*client_.ul_bits_buffer_)[next_radio_id_][dest_pkt_offset]);
 
@@ -490,7 +492,7 @@ void MacThreadClient::ProcessUdpPacketsFromAppsClient(const char* payload,
 
     if (kLogMacPackets) {
       std::stringstream ss;
-      
+
       ss << "MacThreadClient: created packet frame " << next_tx_frame_id_
          << ", pkt " << pkt_id << ", size "
          << cfg_->MacPayloadMaxLength(Direction::kUplink) << " radio buff id "

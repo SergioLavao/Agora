@@ -127,6 +127,7 @@ void MacThreadBaseStation::ProcessCodeblocksFromPhy(EventData event) {
   const size_t frame_id = gen_tag_t(event.tags_[0]).frame_id_;
   const size_t symbol_id = gen_tag_t(event.tags_[0]).symbol_id_;
   const size_t ue_id = gen_tag_t(event.tags_[0]).ue_id_;
+
   // Helper variables (changes with bs / user)
   const size_t num_pilot_symbols = cfg_->Frame().ClientUlPilotSymbols();
   const size_t symbol_array_index = cfg_->Frame().GetULSymbolIdx(symbol_id);
@@ -433,7 +434,6 @@ void MacThreadBaseStation::ProcessUdpPacketsFromAppsBs(const char* payload) {
         "MacThreadBasestation: UDP RX buffer full, buffer ID: %zu. Dropping "
         "rx frame data\n",
         radio_buf_id);
-    //SergioL: Is returning when MAC multiple UEs here (return by default)
     return;
   }
 
@@ -513,6 +513,7 @@ void MacThreadBaseStation::ProcessUdpPacketsFromAppsBs(const char* payload) {
   }  // end all packets
 
   (*client_.dl_bits_buffer_status_)[next_radio_id_][radio_buf_id] = 1;
+
   EventData msg(EventType::kPacketFromMac,
                 rx_mac_tag_t(next_radio_id_, radio_buf_id).tag_);
   AGORA_LOG_FRAME("MacThreadBasestation: Tx mac information to %zu %zu\n",
@@ -522,7 +523,9 @@ void MacThreadBaseStation::ProcessUdpPacketsFromAppsBs(const char* payload) {
 
   radio_buf_id = (radio_buf_id + 1) % kFrameWnd;
   // Might be unnecessary now.
-  next_radio_id_ = (next_radio_id_ + 1) % cfg_->UeAntNum();
+  //SergioL: Change
+  next_radio_id_ = (next_radio_id_ + 1) % cfg_->SpatialStreamsNum();//cfg_->UeAntNum(); //SergioL Probably scheduling here
+  //next_radio_id_ = 0;
   if (next_radio_id_ == 0) {
     next_tx_frame_id_++;
   }

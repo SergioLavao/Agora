@@ -60,43 +60,7 @@ void Channel::ApplyChan(const arma::cx_fmat& fmat_src, arma::cx_fmat& fmat_dst,
     fmat_h = fmat_src * h__;
   } 
 
-  /*
-  switch (channel_model_->GetFadingType()) {
-    case ChannelModel::kFlat: {
-      //SergioL: Static channel 
-      if( is_downlink )
-      {
-        fmat_h = fmat_src * h__st;//channel_model_->GetMatrix(is_downlink);
-      }
-      else
-      {
-        fmat_h = fmat_src * h__;//channel_model_->GetMatrix(is_downlink);
-      }      
-      break;
-    }
-
-    case ChannelModel::kSelective: {
-      hsize_t n_rows = (cfg_->FreqDomainChannel()) ? cfg_->OfdmCaNum()
-                                                   : cfg_->SampsPerSymbol();
-      hsize_t n_cols = (is_downlink) ? cfg_->UeAntNum() : cfg_->BsAntNum();
-
-      fmat_h.zeros(n_rows, n_cols);
-      for (hsize_t h_index = 0; h_index < n_rows; h_index++) {
-        fmat_h.row(h_index) = fmat_src.row(h_index) *
-                              channel_model_->GetMatrix(is_downlink, h_index);
-      }
-      break;
-    }
-
-    default: {
-      AGORA_LOG_ERROR("Invalid Channel model fading type \n");
-      break;
-    }
-  }
-  */
-
-  //fmat_dst = fmat_h;
-  Awgn(fmat_h, fmat_dst);
+ Awgn(fmat_h, fmat_dst);
 
   if (kPrintChannelOutput) {
     Utils::PrintMat(fmat_dst, "H");

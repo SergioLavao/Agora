@@ -21,7 +21,7 @@ static constexpr uint16_t kMacSendFromPort = 0;
 
 //SergioL For VideoStream
 //#define USE_UDP_DATA_SOURCE
-static constexpr bool kDebugPrintSender = false;
+static constexpr bool kDebugPrintSender = true;
 static constexpr size_t kFrameLoadAdvance = 10;
 static constexpr size_t kBufferInit = 10;
 static constexpr size_t kTxBufferElementAlignment = 64;
@@ -50,8 +50,7 @@ void DelayTicks(uint64_t start, uint64_t ticks) {
 
 inline size_t MacSender::TagToTxBuffersIndex(gen_tag_t tag) const {
   const size_t frame_slot = (tag.frame_id_ % kFrameWnd);
-
-  return (frame_slot * cfg_->UeAntNum()) + tag.ue_id_;
+  return (frame_slot * cfg_->UeAntNum()) + tag.ue_id_; //SergioL: Change this
 }
 
 MacSender::MacSender(Config* cfg, std::string& data_filename,
@@ -138,7 +137,7 @@ MacSender::MacSender(Config* cfg, std::string& data_filename,
   // Add the data update thread (background data reader), need to add a variable
   // for the update source number
   // SergioL
-  static constexpr size_t kUpdateSourcePerThread = 4;
+  static constexpr size_t kUpdateSourcePerThread = 1;//4;
   for (size_t update_threads = 0; update_threads < update_thread_num_;
        update_threads++) {
     data_update_queue_.emplace_back(
@@ -262,7 +261,7 @@ void* MacSender::MasterThread(size_t tid) {
                        frame_data_count.at(comp_frame_slot));
       }
       // Check to see if the current frame is finished (UeAntNum)
-      if (frame_data_count.at(comp_frame_slot) == cfg_->UeAntNum()) {
+      if (frame_data_count.at(comp_frame_slot) == 1){ //cfg_->UeAntNum()) {
         frame_end_us = timestamp_us;
         // Finished with the current frame data
         frame_data_count.at(comp_frame_slot) = 0;
@@ -328,9 +327,8 @@ void* MacSender::WorkerThread(size_t tid) {
     ant_per_thread++;
   }
 
-  const size_t ue_ant_low = tid * ant_per_thread;
-  const size_t ue_ant_high =
-      std::min((ue_ant_low + ant_per_thread), cfg_->UeAntNum()) - 1;
+  const size_t ue_ant_low = 0;//tid * ant_per_thread;
+  const size_t ue_ant_high = 0;//std::min((ue_ant_low + ant_per_thread), cfg_->UeAntNum()) - 1;
 
   const size_t ant_this_thread = (ue_ant_high - ue_ant_low) + 1;
 
@@ -462,9 +460,8 @@ void* MacSender::DataUpdateThread(size_t tid, size_t num_data_sources) {
     ue_per_thread++;
   }
 
-  const size_t ue_ant_low = tid * ue_per_thread;
-  const size_t ue_ant_high =
-      std::min((ue_ant_low + ue_per_thread), cfg_->UeAntNum()) - 1;
+  const size_t ue_ant_low = 0;//tid * ue_per_thread;
+  const size_t ue_ant_high = 0; //std::min((ue_ant_low + ue_per_thread), cfg_->UeAntNum()) - 1;
 
   // Sender gets better performance when this thread is not pinned to core
   AGORA_LOG_INFO(
@@ -524,7 +521,7 @@ void* MacSender::DataUpdateThread(size_t tid, size_t num_data_sources) {
     if (data_update_queue_.at(tid).try_dequeue(tag) == true) {
       for (size_t i = ue_ant_low; i <= ue_ant_high; i++) {
         auto tag_for_ue = gen_tag_t::FrmSymUe(((gen_tag_t)tag).frame_id_,
-                                              ((gen_tag_t)tag).symbol_id_, i);
+                                              ((gen_tag_t)tag).symbol_id_, 0); //SergioL //i);
         size_t ant_source = i % num_data_sources;
         std::printf("Update TX Buffer at UE %ld \n", i);
         UpdateTxBuffer(sources.at(ant_source).get(), tag_for_ue);
