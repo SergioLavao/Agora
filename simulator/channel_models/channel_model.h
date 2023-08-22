@@ -50,6 +50,8 @@ class ChannelModel {
   //Not sure this makes sense for all models?
   std::vector<arma::cx_fmat> h_selective_;
 
+  size_t dataset_max_frames_num_;
+
  private:
   FadingType fading_type_;
 };

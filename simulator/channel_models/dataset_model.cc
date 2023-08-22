@@ -10,7 +10,10 @@
 #include "H5Cpp.h"
 #include "logger.h"
 
-bool kPrintDatasetOutput = true;
+
+//When last dataset frame is reached, reset the frame counter
+constexpr bool kLoopDataset = true;
+constexpr bool kPrintDatasetOutput = true;
 
 DatasetModel::DatasetModel(size_t bs_ant_num, size_t ue_ant_num,
                            size_t samples_per_sym,
@@ -110,6 +113,8 @@ void DatasetModel::InstantiateDataset(const std::string& dataset_path) {
     throw error;
   }
 
+  dataset_max_frames_num_ = frames_num;
+
   AGORA_LOG_INFO(
       "Dataset Succesfully loaded\n"
       "Path: %s \n"
@@ -121,6 +126,12 @@ void DatasetModel::InstantiateDataset(const std::string& dataset_path) {
 }
 
 void DatasetModel::UpdateModel() {
+
+  if( kLoopDataset ) {
+    current_frame_num_ = current_frame_num_ % dataset_max_frames_num_;
+  }
+
   h_selective_ = h_matrices_frames_[current_frame_num_];
   current_frame_num_++;
+
 }
