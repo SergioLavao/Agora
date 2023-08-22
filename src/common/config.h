@@ -24,6 +24,8 @@
 #include "symbols.h"
 #include "utils.h"
 
+#include "ran_config.h"
+
 class Config {
  public:
   static constexpr bool kDebugRecipCal = false;
@@ -413,9 +415,13 @@ class Config {
   // Public functions
   void GenPilots();
   void GenData();
+  
   void GenBroadcastSlots(std::vector<std::complex<int16_t>*>& bcast_iq_samps,
-                         std::vector<size_t> ctrl_msg);
-  size_t DecodeBroadcastSlots(const int16_t* const bcast_iq_samps);
+                          BroadcastControlData ctrl_msg);
+                         //std::vector<size_t> ctrl_msg);
+
+  BroadcastControlData DecodeBroadcastSlots(const int16_t* const bcast_iq_samps);
+
   void UpdateUlMCS(const nlohmann::json& ul_mcs_params);
   void UpdateDlMCS(const nlohmann::json& dl_mcs_params);
   void UpdateCtrlMCS();

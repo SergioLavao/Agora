@@ -37,7 +37,7 @@ void DatasetModel::InstantiateDataset(const std::string& dataset_path) {
         file.openDataSet("H_r");  //H Matrix Real part dataset
     H5::DataSet h_i_dataset =
         file.openDataSet("H_i");  //H Matrix Imaginary part dataset
-
+    
     H5::DataSpace real_dataspace = h_r_dataset.getSpace();
     H5::DataSpace im_dataspace = h_i_dataset.getSpace();
 
@@ -88,7 +88,6 @@ void DatasetModel::InstantiateDataset(const std::string& dataset_path) {
         std::printf(
             "Dataset Frame = %ld with %ld Subcarriers loaded successfully \n",
             h_matrices_frames_.size(), h_subcarrier_matrices.size());
-        //Utils::PrintMat( h_matrices_frames_[0][0], "H_");
       }
     }
 

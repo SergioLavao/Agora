@@ -33,4 +33,12 @@ class RBIndicator {
   size_t mcs_index_;  /// MCS Index
 };
 
+class BroadcastControlData
+{
+
+  public:
+    size_t frame_id_;
+
+};
+
 #endif  // RAN_CONFIG_H_

@@ -628,6 +628,9 @@ size_t TxRxWorkerHw::DoTx(long long time0) {
 //Checks to see if the current symbol is followed by another tx symbol
 //Need the radio id, to check against the reference radio
 bool TxRxWorkerHw::IsTxSymbolNext(size_t radio_id, size_t current_symbol) {
+
+  //SergioL(Hardware)
+  
   bool tx_symbol_next = false;
   const auto cell_id = Configuration()->CellId().at(radio_id);
   const auto reference_radio = Configuration()->RefRadio(cell_id);

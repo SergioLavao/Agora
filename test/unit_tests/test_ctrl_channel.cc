@@ -27,8 +27,12 @@ TEST(TestControl, VerifyCorrectness) {
             2 * cfg->SampsPerSymbol() * sizeof(int16_t)));
   }
 
-  std::vector<size_t> msg;
-  msg.push_back(1051);
+  //SergioL: 
+  //std::vector<size_t> msg;
+  //msg.push_back(1051);
+  BroadcastControlData msg;
+  msg.frame_id_ = 1051;
+
   cfg->GenBroadcastSlots(data_buffer, msg);
 
   complex_float* bcast_fft_buff = static_cast<complex_float*>(
@@ -48,9 +52,9 @@ TEST(TestControl, VerifyCorrectness) {
     CommsLib::Ifft2tx(bcast_fft_buff, data_buffer.at(i), cfg->OfdmCaNum(),
                       cfg->OfdmTxZeroPrefix(), cfg->CpLen(), 1.0);
   }
-  auto decoded_msg =
-      cfg->DecodeBroadcastSlots(reinterpret_cast<int16_t*>(data_buffer[0]));
-  ASSERT_EQ(msg.at(0), decoded_msg);
+  BroadcastControlData decoded_msg =
+      cfg->DecodeBroadcastSlots(reinterpret_cast<BroadcastControlData*>(data_buffer[0]));
+  ASSERT_EQ(msg, decoded_msg);
   for (size_t i = 0; i < cfg->Frame().NumDlControlSyms(); i++) {
     FreeBuffer1d(&data_buffer.at(i));
   }

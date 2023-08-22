@@ -267,6 +267,9 @@ std::vector<Packet*> TxRxWorkerClientHw::DoRx(
 
               if (Configuration()->GetSymbolType(global_symbol_id) ==
                   SymbolType::kControl) {
+                
+                //SergioL(Hardware): Hardware control symbol reception....
+
                 size_t ctrl_frame_id =
                     Configuration()->DecodeBroadcastSlots(raw_pkt->data_);
                 if (ctrl_frame_id != global_frame_id) {

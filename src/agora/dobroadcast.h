@@ -25,6 +25,7 @@ class DoBroadcast : public Doer {
  private:
   char* dl_socket_buffer_;
   DurationStat* duration_stat_;
+
 };
 
 #endif  // DOBROADCAST_H_
