@@ -118,7 +118,6 @@ std::vector<Packet*> TxRxWorkerClientSim::RecvEnqueue(size_t interface_id) {
     if (Configuration()->GetSymbolType(symbol_id) == SymbolType::kControl) {
 
       //SergioL: Change the recieved data to Scheduling decision 
-
       size_t ctrl_frame_id = Configuration()->DecodeBroadcastSlots(pkt->data_);
       if (ctrl_frame_id != pkt->frame_id_) {
         AGORA_LOG_ERROR(
