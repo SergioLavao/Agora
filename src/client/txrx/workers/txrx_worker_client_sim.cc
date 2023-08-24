@@ -24,7 +24,7 @@ TxRxWorkerClientSim::TxRxWorkerClientSim(
     moodycamel::ProducerToken& notify_producer,
     std::vector<RxPacket>& rx_memory, std::byte* const tx_memory,
     std::mutex& sync_mutex, std::condition_variable& sync_cond,
-    std::atomic<bool>& can_proceed)
+    std::atomic<bool>& can_proceed , MacScheduler& mac_sched)
     : TxRxWorker(core_offset, tid, interface_count, interface_offset,
                  config->NumUeChannels(), config, rx_frame_start,
                  event_notify_q, tx_pending_q, tx_producer, notify_producer,
@@ -32,7 +32,8 @@ TxRxWorkerClientSim::TxRxWorkerClientSim(
       tx_pkt_pilot_(config->UeAntNum(),
                     std::vector<std::vector<uint8_t>>(
                         config->Frame().NumPilotSyms(),
-                        std::vector<uint8_t>(config->PacketLength(), 0u))) {
+                        std::vector<uint8_t>(config->PacketLength(), 0u))),
+      mac_sched_( mac_sched ){
   for (size_t interface = 0; interface < num_interfaces_; interface++) {
     const uint16_t local_port_id =
         config->UeServerPort() + interface + interface_offset_;
@@ -120,15 +121,35 @@ std::vector<Packet*> TxRxWorkerClientSim::RecvEnqueue(size_t interface_id) {
       //If control symbol recieved, update the scheduler per ue
       //SergioL: Change the recieved data to Scheduling decision 
       BroadcastControlData ctrl_data = Configuration()->DecodeBroadcastSlots(pkt->data_);
-      size_t ctrl_frame_id = ctrl_data.frame_id_;
-    
-      std::printf("=================== RX at UE %zu Schedule Map = [%u %u %u %u] ===================\n", pkt->ant_id_, ctrl_data.ue_map_[0],ctrl_data.ue_map_[1],ctrl_data.ue_map_[2],ctrl_data.ue_map_[3]);
 
+      arma::uvec rx_sched_ue_list( Configuration()->UeAntNum() );
+
+      size_t ctrl_frame_id = ctrl_data.frame_id_;
       if (ctrl_frame_id != pkt->frame_id_) {
         AGORA_LOG_ERROR(
-            "RecvEnqueue: Ctrl channel frame_id mismatch error (%zu/%zu)!\n",
+            "RecvEnqueue: Ctrl channel frame_id mismatch error, ignoring scheduling (%zu/%zu)!\n",
             ctrl_frame_id, pkt->frame_id_);
+
+        //Ctrl data error, None UE is scheduled 
+        for( size_t ue = 0; ue < Configuration()->UeAntNum(); ue++ ) {
+          ctrl_data.ue_map_[ue] = 0;
+        }
+        
       }
+
+      for( size_t ue = 0; ue < Configuration()->UeAntNum() ; ue++ ){
+        //mac_sched_.rx_scheduled_ue_list_.at(ue) = ctrl_data.ue_map_[ue];
+       //mac_sched_->rx_scheduled_ue_list_.at(ue) = ctrl_data.ue_map_[ue];
+      }
+      
+      std::stringstream ss;
+      ss << "Broadcast RX Scheduled List at UE " <<  pkt->ant_id_ << " [ " ;
+      for( size_t ue = 0; ue < Configuration()->UeAntNum() ; ue++ ){
+        ss << ctrl_data.ue_map_[ue] << " ";
+      }
+      ss << "];" << std::endl;
+      AGORA_LOG_INFO(ss.str());
+
       ReturnRxPacket(rx_placement);
     } else {
       // Push kPacketRX event into the queue.

@@ -18,6 +18,8 @@
  * for the client).
  */
 
+#include "mac_scheduler.h"
+
 class PacketTxRxClientSim : public PacketTxRx {
  public:
   PacketTxRxClientSim(Config* const cfg, size_t core_offset,
@@ -26,13 +28,16 @@ class PacketTxRxClientSim : public PacketTxRx {
                       moodycamel::ProducerToken** notify_producer_tokens,
                       moodycamel::ProducerToken** tx_producer_tokens,
                       Table<char>& rx_buffer, size_t packet_num_in_buffer,
-                      Table<size_t>& frame_start, char* tx_buffer);
+                      Table<size_t>& frame_start, char* tx_buffer, MacScheduler& mac_sched);
   ~PacketTxRxClientSim() final;
 
  private:
   bool CreateWorker(size_t tid, size_t interface_count, size_t interface_offset,
                     size_t* rx_frame_start, std::vector<RxPacket>& rx_memory,
                     std::byte* const tx_memory) final;
+
+  MacScheduler& mac_sched_;
+  
 };
 
 #endif  // PACKETTXRX_CLIENT_SIM_H_

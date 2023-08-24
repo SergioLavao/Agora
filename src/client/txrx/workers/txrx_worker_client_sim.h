@@ -13,6 +13,8 @@
 #include "txrx_worker.h"
 #include "udp_comm.h"
 
+#include "mac_scheduler.h"
+
 class TxRxWorkerClientSim : public TxRxWorker {
  public:
   TxRxWorkerClientSim(size_t core_offset, size_t tid, size_t interface_count,
@@ -25,7 +27,7 @@ class TxRxWorkerClientSim : public TxRxWorker {
                       std::vector<RxPacket>& rx_memory,
                       std::byte* const tx_memory, std::mutex& sync_mutex,
                       std::condition_variable& sync_cond,
-                      std::atomic<bool>& can_proceed);
+                      std::atomic<bool>& can_proceed, MacScheduler& mac_sched);
   TxRxWorkerClientSim() = delete;
   ~TxRxWorkerClientSim() final;
 
@@ -40,5 +42,8 @@ class TxRxWorkerClientSim : public TxRxWorker {
 
   //Helper tx vectors
   std::vector<std::vector<std::vector<uint8_t>>> tx_pkt_pilot_;
+
+  MacScheduler& mac_sched_;
+
 };
 #endif  // TXRX_WORKER_CLIENT_SIM_H_

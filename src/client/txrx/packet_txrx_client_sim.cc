@@ -15,11 +15,11 @@ PacketTxRxClientSim::PacketTxRxClientSim(
     moodycamel::ConcurrentQueue<EventData>* tx_pending_q,
     moodycamel::ProducerToken** notify_producer_tokens,
     moodycamel::ProducerToken** tx_producer_tokens, Table<char>& rx_buffer,
-    size_t packet_num_in_buffer, Table<size_t>& frame_start, char* tx_buffer)
+    size_t packet_num_in_buffer, Table<size_t>& frame_start, char* tx_buffer, MacScheduler& mac_sched)
     : PacketTxRx(AgoraTxRx::TxRxTypes::kUserEquiptment, cfg, core_offset,
                  event_notify_q, tx_pending_q, notify_producer_tokens,
                  tx_producer_tokens, rx_buffer, packet_num_in_buffer,
-                 frame_start, tx_buffer) {}
+                 frame_start, tx_buffer), mac_sched_( mac_sched ) {}
 
 PacketTxRxClientSim::~PacketTxRxClientSim() = default;
 
@@ -41,6 +41,6 @@ bool PacketTxRxClientSim::CreateWorker(size_t tid, size_t interface_count,
       core_offset_, tid, interface_count, interface_offset, cfg_,
       rx_frame_start, event_notify_q_, tx_pending_q_, *tx_producer_tokens_[tid],
       *notify_producer_tokens_[tid], rx_memory, tx_memory, mutex_, cond_,
-      proceed_));
+      proceed_, mac_sched_));
   return true;
 }

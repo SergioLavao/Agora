@@ -113,7 +113,7 @@ PhyUe::PhyUe(Config* config)
         config_, config_->UeCoreOffset() + 1, &complete_queue_, &tx_queue_,
         rx_ptoks_ptr_, tx_ptoks_ptr_, rx_buffer_,
         rx_buffer_size_ / config->PacketLength(), stats_->FrameStart(),
-        tx_buffer_);
+        tx_buffer_, *mac_sched_);
   }
 
   size_t core_offset_worker = config_->UeCoreOffset() + 1 + rx_thread_num_;

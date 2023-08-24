@@ -53,14 +53,20 @@ void DoBroadcast::GenerateBroadcastSymbols(size_t frame_id) {
     ctrl_data.frame_id_ = frame_id + (kUseArgos ? TX_FRAME_DELTA : 0);
   }
 
-  arma::uvec sched_map =  mac_sched_->ScheduledUeMap( frame_id, 0u );
+  arma::uvec sched_ue_list =  mac_sched_->ScheduledUeList( frame_id, 0u );
+  
+  std::memset(ctrl_data.ue_map_, 0, sizeof(ctrl_data.ue_map_));
+  for( size_t ue_idx = 0; ue_idx < cfg_->SpatialStreamsNum(); ue_idx++ ){
+    ctrl_data.ue_map_[ sched_ue_list[ue_idx] ] = 1;//1 Scheduled, 0 Not Scheduled 
+  }
 
-  std::printf("SchedMap %u \n", sched_map(1));
-
-  ctrl_data.ue_map_[0] = 0;
-  ctrl_data.ue_map_[1] = 1;
-  ctrl_data.ue_map_[2] = 0;
-  ctrl_data.ue_map_[3] = 1;
+  std::stringstream ss;
+  ss << "Broadcast TX Scheduled List [ " ; //1 Scheduled, 0 Not Scheduled 
+  for( size_t ue = 0; ue < cfg_->UeAntNum(); ue++ ){
+    ss << ctrl_data.ue_map_[ue] << " ";
+  }
+  ss << "];" << std::endl;
+  AGORA_LOG_INFO(ss.str());
 
   cfg_->GenBroadcastSlots(bcast_iq_samps, ctrl_data);
 

@@ -12,7 +12,7 @@ class MacScheduler {
   explicit MacScheduler(Config* const cfg);
   ~MacScheduler();
 
-  void UpdateMacScheduler();
+  void UpdateClientMacScheduler();
 
   bool IsUeScheduled(size_t frame_id, size_t sc_id, size_t ue_id);
   size_t ScheduledUeIndex(size_t frame_id, size_t sc_id, size_t sched_ue_id);
@@ -20,6 +20,8 @@ class MacScheduler {
   arma::uvec ScheduledUeMap(size_t frame_id, size_t sc_id);
   size_t ScheduledUeUlMcs(size_t frame_id, size_t ue_id);
   size_t ScheduledUeDlMcs(size_t frame_id, size_t ue_id);
+
+  arma::uvec rx_scheduled_ue_list_; //Received scheduled ue list
 
  private:
   size_t num_groups_;
