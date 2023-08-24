@@ -2,6 +2,7 @@
 #define RAN_CONFIG_H_
 
 #include <cstddef>
+#include <vector>
 
 /**
  * @brief The struct that contains the RAN configuration that Agora must
@@ -33,11 +34,13 @@ class RBIndicator {
   size_t mcs_index_;  /// MCS Index
 };
 
-class BroadcastControlData
+struct BroadcastControlData
 {
 
   public:
     size_t frame_id_;
+    short ue_map_[4]; //Max UE Num
+    //std::vector<short> ue_list_;
 
 };
 

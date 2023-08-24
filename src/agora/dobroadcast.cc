@@ -12,8 +12,8 @@
 static constexpr bool kPrintSocketOutput = false;
 
 DoBroadcast::DoBroadcast(Config* in_config, int in_tid,
-                         char* in_dl_socket_buffer, Stats* in_stats_manager)
-    : Doer(in_config, in_tid), dl_socket_buffer_(in_dl_socket_buffer) {
+                         char* in_dl_socket_buffer, MacScheduler* mac_sched, Stats* in_stats_manager)
+    : Doer(in_config, in_tid), dl_socket_buffer_(in_dl_socket_buffer), mac_sched_( mac_sched ) {
   duration_stat_ =
       in_stats_manager->GetDurationStat(DoerType::kBroadcast, in_tid);
 
@@ -26,9 +26,8 @@ void DoBroadcast::GenerateBroadcastSymbols(size_t frame_id) {
   RtAssert(num_control_syms > 0,
            "DoBroadcast: No downlink control symbols are scheduled!");
   std::vector<std::complex<int16_t>*> bcast_iq_samps(num_control_syms);
-  std::vector<size_t> ctrl_data(num_control_syms);
   
-  BroadcastControlData ctrt_data_c_;
+  BroadcastControlData ctrl_data;
 
   for (size_t symbol_idx_dl = 0; symbol_idx_dl < num_control_syms;
        symbol_idx_dl++) {
@@ -51,14 +50,19 @@ void DoBroadcast::GenerateBroadcastSymbols(size_t frame_id) {
     bcast_iq_samps.at(symbol_idx_dl) =
         reinterpret_cast<std::complex<int16_t>*>(pkt->data_);
     //SergioL: generate more control info
-    ctrt_data_c_.frame_id_ = frame_id + (kUseArgos ? TX_FRAME_DELTA : 0);
-
-    ctrl_data.at(symbol_idx_dl) = frame_id + (kUseArgos ? TX_FRAME_DELTA : 0);
-
+    ctrl_data.frame_id_ = frame_id + (kUseArgos ? TX_FRAME_DELTA : 0);
   }
 
-  //cfg_->GenBroadcastSlots(bcast_iq_samps, ctrl_data);
-  cfg_->GenBroadcastSlots(bcast_iq_samps, ctrt_data_c_);
+  arma::uvec sched_map =  mac_sched_->ScheduledUeMap( frame_id, 0u );
+
+  std::printf("SchedMap %u \n", sched_map(1));
+
+  ctrl_data.ue_map_[0] = 0;
+  ctrl_data.ue_map_[1] = 1;
+  ctrl_data.ue_map_[2] = 0;
+  ctrl_data.ue_map_[3] = 1;
+
+  cfg_->GenBroadcastSlots(bcast_iq_samps, ctrl_data);
 
   if (kPrintSocketOutput) {
     for (size_t symbol_idx_dl = 0; symbol_idx_dl < num_control_syms;

@@ -27,11 +27,14 @@ TEST(TestControl, VerifyCorrectness) {
             2 * cfg->SampsPerSymbol() * sizeof(int16_t)));
   }
 
-  //SergioL: 
-  //std::vector<size_t> msg;
-  //msg.push_back(1051);
   BroadcastControlData msg;
-  msg.frame_id_ = 1051;
+
+  msg.frame_id_ = 1501;
+
+  for( size_t ue = 0; ue < cfg->UeAntNum(); ue++ )
+  {
+    msg.ue_map_[0] = ue;
+  }
 
   cfg->GenBroadcastSlots(data_buffer, msg);
 
@@ -53,8 +56,15 @@ TEST(TestControl, VerifyCorrectness) {
                       cfg->OfdmTxZeroPrefix(), cfg->CpLen(), 1.0);
   }
   BroadcastControlData decoded_msg =
-      cfg->DecodeBroadcastSlots(reinterpret_cast<BroadcastControlData*>(data_buffer[0]));
-  ASSERT_EQ(msg, decoded_msg);
+      cfg->DecodeBroadcastSlots(reinterpret_cast<int16_t*>(data_buffer[0]));
+
+  ASSERT_EQ(msg.frame_id_, decoded_msg.frame_id_);
+
+  for( size_t ue = 0; ue < cfg->UeAntNum(); ue++ )
+  {
+    ASSERT_EQ(msg.ue_map_[ue], decoded_msg.ue_map_[ue]);
+  }
+
   for (size_t i = 0; i < cfg->Frame().NumDlControlSyms(); i++) {
     FreeBuffer1d(&data_buffer.at(i));
   }

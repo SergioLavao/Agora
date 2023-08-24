@@ -2,13 +2,13 @@
 import numpy as np
 import h5py
 
-frames = 500
+frames = 10
 sub_carrier_num = 512
 
-ues = 4
+ues = 8
 bss = 32
 
-dataset_file = h5py.File('rayleigh_flat_dataset.hdf5', 'w')
+dataset_file = h5py.File('test.hdf5', 'w')
 
 #Dataset shape MUST be (Frames,SCs,BSs,UEs)
 H_r_dataset = np.empty(shape=(frames,sub_carrier_num,bss,ues))

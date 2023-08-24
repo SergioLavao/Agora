@@ -265,6 +265,11 @@ class Config {
     return dir == Direction::kUplink ? this->ul_mac_data_bytes_num_perframe_
                                      : this->dl_mac_data_bytes_num_perframe_;
   }
+
+  inline size_t ControlDataBytesNum() const {
+    return this->dl_data_bytes_num_persymbol_;
+  }
+
   inline size_t MacBytesNumPerframe(Direction dir) const {
     return dir == Direction::kUplink ? this->ul_mac_bytes_num_perframe_
                                      : this->dl_mac_bytes_num_perframe_;
@@ -418,7 +423,6 @@ class Config {
   
   void GenBroadcastSlots(std::vector<std::complex<int16_t>*>& bcast_iq_samps,
                           BroadcastControlData ctrl_msg);
-                         //std::vector<size_t> ctrl_msg);
 
   BroadcastControlData DecodeBroadcastSlots(const int16_t* const bcast_iq_samps);
 

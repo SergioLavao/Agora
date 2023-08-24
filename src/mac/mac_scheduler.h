@@ -12,6 +12,8 @@ class MacScheduler {
   explicit MacScheduler(Config* const cfg);
   ~MacScheduler();
 
+  void UpdateMacScheduler();
+
   bool IsUeScheduled(size_t frame_id, size_t sc_id, size_t ue_id);
   size_t ScheduledUeIndex(size_t frame_id, size_t sc_id, size_t sched_ue_id);
   arma::uvec ScheduledUeList(size_t frame_id, size_t sc_id);
@@ -26,6 +28,10 @@ class MacScheduler {
   Table<size_t> ul_mcs_buffer_;
   Table<size_t> dl_mcs_buffer_;
   Config* const cfg_;
+
+  //Current schedule group
+  size_t current_gp;
+
 };
 
 #endif  // MAC_SCHEDULER_H_

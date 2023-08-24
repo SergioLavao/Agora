@@ -11,10 +11,12 @@
 #include "memory_manage.h"
 #include "stats.h"
 
+#include "mac_scheduler.h"
+
 class DoBroadcast : public Doer {
  public:
   DoBroadcast(Config* in_config, int in_tid, char* in_dl_socket_buffer,
-              Stats* in_stats_manager);
+              MacScheduler* mac_sched, Stats* in_stats_manager);
   ~DoBroadcast() override;
 
   EventData Launch(size_t tag) override;
@@ -25,6 +27,8 @@ class DoBroadcast : public Doer {
  private:
   char* dl_socket_buffer_;
   DurationStat* duration_stat_;
+
+  MacScheduler* mac_sched_;
 
 };
 

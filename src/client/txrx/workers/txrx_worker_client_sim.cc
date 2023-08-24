@@ -116,9 +116,14 @@ std::vector<Packet*> TxRxWorkerClientSim::RecvEnqueue(size_t interface_id) {
     }
     size_t symbol_id = pkt->symbol_id_;
     if (Configuration()->GetSymbolType(symbol_id) == SymbolType::kControl) {
-
+      
+      //If control symbol recieved, update the scheduler per ue
       //SergioL: Change the recieved data to Scheduling decision 
-      size_t ctrl_frame_id = Configuration()->DecodeBroadcastSlots(pkt->data_);
+      BroadcastControlData ctrl_data = Configuration()->DecodeBroadcastSlots(pkt->data_);
+      size_t ctrl_frame_id = ctrl_data.frame_id_;
+    
+      std::printf("=================== RX at UE %zu Schedule Map = [%u %u %u %u] ===================\n", pkt->ant_id_, ctrl_data.ue_map_[0],ctrl_data.ue_map_[1],ctrl_data.ue_map_[2],ctrl_data.ue_map_[3]);
+
       if (ctrl_frame_id != pkt->frame_id_) {
         AGORA_LOG_ERROR(
             "RecvEnqueue: Ctrl channel frame_id mismatch error (%zu/%zu)!\n",
