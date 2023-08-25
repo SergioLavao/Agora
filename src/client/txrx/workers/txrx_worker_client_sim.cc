@@ -122,8 +122,6 @@ std::vector<Packet*> TxRxWorkerClientSim::RecvEnqueue(size_t interface_id) {
       //SergioL: Change the recieved data to Scheduling decision 
       BroadcastControlData ctrl_data = Configuration()->DecodeBroadcastSlots(pkt->data_);
 
-      arma::uvec rx_sched_ue_list( Configuration()->UeAntNum() );
-
       size_t ctrl_frame_id = ctrl_data.frame_id_;
       if (ctrl_frame_id != pkt->frame_id_) {
         AGORA_LOG_ERROR(
@@ -137,15 +135,15 @@ std::vector<Packet*> TxRxWorkerClientSim::RecvEnqueue(size_t interface_id) {
         
       }
 
+      arma::uvec rx_sched_ue_list( Configuration()->UeAntNum() );
       for( size_t ue = 0; ue < Configuration()->UeAntNum() ; ue++ ){
-        //mac_sched_.rx_scheduled_ue_list_.at(ue) = ctrl_data.ue_map_[ue];
-       //mac_sched_->rx_scheduled_ue_list_.at(ue) = ctrl_data.ue_map_[ue];
-      }
-      
+        mac_sched_.rx_scheduled_ue_list_.at(ue) = ctrl_data.ue_map_[ue];
+      }      
+
       std::stringstream ss;
-      ss << "Broadcast RX Scheduled List at UE " <<  pkt->ant_id_ << " [ " ;
+      ss << "Broadcast RX Scheduled List for frame " << ( pkt->frame_id_ + 1 ) << " at UE " <<  pkt->ant_id_ << " [ " ;
       for( size_t ue = 0; ue < Configuration()->UeAntNum() ; ue++ ){
-        ss << ctrl_data.ue_map_[ue] << " ";
+        ss << mac_sched_.rx_scheduled_ue_list_(ue) << " ";
       }
       ss << "];" << std::endl;
       AGORA_LOG_INFO(ss.str());

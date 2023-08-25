@@ -9,7 +9,7 @@
     "dl_mcs" : {
       "mcs_index": 15 /*16QAM, 616/1024*/
     },
-   "frame_schedule" : [
+    "frame_schedule" : [
       "BSPPPPUUUUUGGDDDDD"
     ],
     "sample_rate" : 1e6,
@@ -32,5 +32,5 @@
     "ue_core_offset": 1,
     "ue_worker_thread_num": 2,
     "ue_socket_thread_num": 1,
-    "max_frame" : 2
+    "max_frame" : 1
 }

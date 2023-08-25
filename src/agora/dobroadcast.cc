@@ -40,8 +40,8 @@ void DoBroadcast::GenerateBroadcastSymbols(size_t frame_id) {
 
     const size_t total_symbol_idx =
         cfg_->GetTotalSymbolIdxDl(frame_id, symbol_id);
-    ///\todo change to BroadcastAnt()....?? it doesnt exists
 
+    ///\todo change to BroadcastAnt()...
     const size_t offset =
         (total_symbol_idx * cfg_->BsAntNum()) + cfg_->BeaconAnt();
 

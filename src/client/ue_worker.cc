@@ -163,13 +163,16 @@ void UeWorker::DoFftPilot(size_t tag) {
   const size_t dl_symbol_id = config_.Frame().GetDLSymbolIdx(symbol_id);
   const bool bypass_FFT = config_.FreqDomainChannel();
 
+  AGORA_LOG_INFO("UE DL OPERATION\n", ant_id);
+
   if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id)) {
+ 
     if (kDebugPrintInTask || kDebugPrintFft) {
       AGORA_LOG_INFO(
           "UeWorker[%zu]: Fft Pilot(frame %zu, symbol %zu, ant %zu)\n", tid_,
           frame_id, symbol_id, ant_id);
     }
-
+    
     const size_t sig_offset = config_.OfdmRxZeroPrefixClient();
 
     if (kPrintDownlinkPilotStats) {
@@ -274,6 +277,7 @@ void UeWorker::DoFftData(size_t tag) {
   const bool bypass_FFT = config_.FreqDomainChannel();
 
   if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id)) {
+ 
     if (kDebugPrintInTask || kDebugPrintFft) {
       AGORA_LOG_INFO(
           "UeWorker[%zu]: Fft Data(frame %zu, symbol %zu, ant %zu)\n", tid_,
@@ -407,6 +411,7 @@ void UeWorker::DoDemul(size_t tag) {
   const size_t symbol_id = gen_tag_t(tag).symbol_id_;
   const size_t ant_id = gen_tag_t(tag).ant_id_;
   if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id)) {
+ 
     if (kDebugPrintInTask || kDebugPrintDemul) {
       AGORA_LOG_INFO("UeWorker[%zu]: Demul  (frame %zu, symbol %zu, ant %zu)\n",
                      tid_, frame_id, symbol_id, ant_id);
@@ -474,7 +479,7 @@ void UeWorker::DoDemul(size_t tag) {
         tid_, frame_id, symbol_id, ant_id,
         GetTime::CyclesToMs(dem_duration_stat, GetTime::MeasureRdtscFreq()));
   }
-
+  
   RtAssert(
       notify_queue_.enqueue(*ptok_.get(), EventData(EventType::kDemul, tag)),
       "Demodulation message enqueue failed");
@@ -485,6 +490,7 @@ void UeWorker::DoDecodeUe(DoDecodeClient* decoder, size_t tag) {
   const size_t symbol_id = gen_tag_t(tag).symbol_id_;
   const size_t ant_id = gen_tag_t(tag).ant_id_;
   if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id)) {
+ 
     const LDPCconfig& ldpc_config = config_.LdpcConfig(Direction::kDownlink);
     for (size_t cb_id = 0; cb_id < ldpc_config.NumBlocksInSymbol(); cb_id++) {
       // For now, call for each cb
@@ -517,7 +523,12 @@ void UeWorker::DoEncodeUe(DoEncode* encoder, size_t tag) {
   const size_t frame_id = gen_tag_t(tag).frame_id_;
   const size_t symbol_id = gen_tag_t(tag).symbol_id_;
   const size_t ant_id = gen_tag_t(tag).ue_id_;
-  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id)) {
+
+  AGORA_LOG_INFO("UL OPERATION\n", ant_id);
+  
+  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
+  //if ( true ) {
+ 
     const LDPCconfig& ldpc_config = config_.LdpcConfig(Direction::kUplink);
 
     // For now, call for each cb
@@ -544,7 +555,9 @@ void UeWorker::DoModul(size_t tag) {
   const size_t frame_id = gen_tag_t(tag).frame_id_;
   const size_t symbol_id = gen_tag_t(tag).symbol_id_;
   const size_t ant_id = gen_tag_t(tag).ue_id_;
-  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id)) {
+  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
+  //if ( true ) {
+ 
     if (kDebugPrintInTask || kDebugPrintModul) {
       AGORA_LOG_INFO("UeWorker[%zu]: Modul  (frame %zu, symbol %zu, ant %zu)\n",
                      tid_, frame_id, symbol_id, ant_id);
@@ -595,8 +608,9 @@ void UeWorker::DoIfftUe(DoIFFTClient* iffter, size_t tag) {
   const size_t frame_id = gen_tag_t(tag).frame_id_;
   const size_t symbol_id = gen_tag_t(tag).symbol_id_;
   const size_t ant_id = gen_tag_t(tag).ue_id_;
-  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id)) {
-    // TODO Remove this copy
+  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
+  //if ( true ) {
+
     {
       complex_float const* source_data = nullptr;
       const size_t ul_symbol_idx = config_.Frame().GetULSymbolIdx(symbol_id);
@@ -642,7 +656,10 @@ void UeWorker::DoIfft(size_t tag) {
   char* cur_tx_buffer = &tx_buffer_[tx_offset];
   auto* pkt = reinterpret_cast<Packet*>(cur_tx_buffer);
   auto* tx_data_ptr = reinterpret_cast<std::complex<short>*>(pkt->data_);
-  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id)) {
+
+  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
+  //if ( true ) {
+ 
     if (kDebugPrintInTask) {
       AGORA_LOG_INFO(
           "User Task[%zu]: iFFT   (frame %zu, symbol %zu, user %zu)\n", tid_,

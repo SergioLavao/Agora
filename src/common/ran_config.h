@@ -36,11 +36,10 @@ class RBIndicator {
 
 struct BroadcastControlData
 {
-
+  
   public:
     size_t frame_id_;
     short ue_map_[4]; //Max UE Num
-    //std::vector<short> ue_list_;
 
 };
 
