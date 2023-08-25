@@ -533,7 +533,7 @@ void PhyUe::Start() {
               demul_counters_.Reset(frame_id);
 
               auto ue_map = mac_sched_->ScheduledUeMap(frame_id, 0u);
-              auto ue_list = mac_sched_->ScheduledUeList(frame_id, 0u);
+              //auto ue_list = mac_sched_->ScheduledUeList(frame_id, 0u);
 
               this->phy_stats_->RecordEvm(frame_id, config_->LogScNum(),
                                           ue_map);
@@ -586,7 +586,7 @@ void PhyUe::Start() {
               PrintPerFrameDone(PrintType::kDecode, frame_id);
               decode_counters_.Reset(frame_id);
               auto ue_map = mac_sched_->ScheduledUeMap(frame_id, 0u);
-              auto ue_list = mac_sched_->ScheduledUeList(frame_id, 0u);
+              //auto ue_list = mac_sched_->ScheduledUeList(frame_id, 0u);
               this->phy_stats_->RecordBer(frame_id, ue_map);
               this->phy_stats_->RecordSer(frame_id, ue_map);
               bool finished =
