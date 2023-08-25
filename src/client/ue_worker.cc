@@ -166,7 +166,7 @@ void UeWorker::DoFftPilot(size_t tag) {
   AGORA_LOG_INFO("UE DL OPERATION\n", ant_id);
 
   if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id)) {
- 
+
     if (kDebugPrintInTask || kDebugPrintFft) {
       AGORA_LOG_INFO(
           "UeWorker[%zu]: Fft Pilot(frame %zu, symbol %zu, ant %zu)\n", tid_,
@@ -479,7 +479,7 @@ void UeWorker::DoDemul(size_t tag) {
         tid_, frame_id, symbol_id, ant_id,
         GetTime::CyclesToMs(dem_duration_stat, GetTime::MeasureRdtscFreq()));
   }
-  
+
   RtAssert(
       notify_queue_.enqueue(*ptok_.get(), EventData(EventType::kDemul, tag)),
       "Demodulation message enqueue failed");
@@ -526,8 +526,8 @@ void UeWorker::DoEncodeUe(DoEncode* encoder, size_t tag) {
 
   AGORA_LOG_INFO("UL OPERATION\n", ant_id);
   
-  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
-  //if ( true ) {
+  //if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
+  if ( true ) {
  
     const LDPCconfig& ldpc_config = config_.LdpcConfig(Direction::kUplink);
 
@@ -555,8 +555,8 @@ void UeWorker::DoModul(size_t tag) {
   const size_t frame_id = gen_tag_t(tag).frame_id_;
   const size_t symbol_id = gen_tag_t(tag).symbol_id_;
   const size_t ant_id = gen_tag_t(tag).ue_id_;
-  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
-  //if ( true ) {
+  //if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
+  if ( true ) {
  
     if (kDebugPrintInTask || kDebugPrintModul) {
       AGORA_LOG_INFO("UeWorker[%zu]: Modul  (frame %zu, symbol %zu, ant %zu)\n",
@@ -608,8 +608,8 @@ void UeWorker::DoIfftUe(DoIFFTClient* iffter, size_t tag) {
   const size_t frame_id = gen_tag_t(tag).frame_id_;
   const size_t symbol_id = gen_tag_t(tag).symbol_id_;
   const size_t ant_id = gen_tag_t(tag).ue_id_;
-  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
-  //if ( true ) {
+  //if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
+  if ( true ) {
 
     {
       complex_float const* source_data = nullptr;
@@ -657,8 +657,8 @@ void UeWorker::DoIfft(size_t tag) {
   auto* pkt = reinterpret_cast<Packet*>(cur_tx_buffer);
   auto* tx_data_ptr = reinterpret_cast<std::complex<short>*>(pkt->data_);
 
-  if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
-  //if ( true ) {
+  //if (mac_sched_.IsUeScheduled(frame_id, 0u, ant_id) || frame_id == 0 ) {
+  if ( true ) {
  
     if (kDebugPrintInTask) {
       AGORA_LOG_INFO(

@@ -138,8 +138,8 @@ std::vector<Packet*> TxRxWorkerClientSim::RecvEnqueue(size_t interface_id) {
       arma::uvec rx_sched_ue_list( Configuration()->UeAntNum() );
       for( size_t ue = 0; ue < Configuration()->UeAntNum() ; ue++ ){
         mac_sched_.rx_scheduled_ue_list_.at(ue) = ctrl_data.ue_map_[ue];
-      }      
-
+      }
+      
       std::stringstream ss;
       ss << "Broadcast RX Scheduled List for frame " << ( pkt->frame_id_ + 1 ) << " at UE " <<  pkt->ant_id_ << " [ " ;
       for( size_t ue = 0; ue < Configuration()->UeAntNum() ; ue++ ){

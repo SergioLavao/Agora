@@ -50,14 +50,7 @@ MacScheduler::~MacScheduler() {
 bool MacScheduler::IsUeScheduled(size_t frame_id, size_t sc_id, size_t ue_id) {
   size_t gp = frame_id % num_groups_;
   //return (schedule_buffer_[gp][ue_id + cfg_->UeAntNum() * sc_id] != 0);
-  if( (schedule_buffer_[gp][ue_id + cfg_->UeAntNum() * sc_id] != 0 ) != (rx_scheduled_ue_list_[ ue_id ] == 1) ) {
-    std::printf( "\n\nINVALID RX SCHEDULED BUFF at frame %zu, ant_id %zu REASON: \n", frame_id, ue_id );
-    std::printf( "->schedule_buffer_[%zu][%zu] = %zu \n", gp, ue_id + cfg_->UeAntNum() * sc_id, schedule_buffer_[gp][ue_id + cfg_->UeAntNum() * sc_id] );
-    std::printf( "->rx_scheduled_ue_list_[%zu] = %zu \n\n ", ue_id, ue_id + rx_scheduled_ue_list_[ ue_id ] );
-  }
-  
-  return (schedule_buffer_[gp][ue_id + cfg_->UeAntNum() * sc_id] != 0);
-  //return ( rx_scheduled_ue_list_[ ue_id ] == 1 ) ? true : false;
+  return ( rx_scheduled_ue_list_[ ue_id ] == 1 ) ? true : false;
 }
 
 size_t MacScheduler::ScheduledUeIndex(size_t frame_id, size_t sc_id,

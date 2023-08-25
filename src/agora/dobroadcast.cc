@@ -53,7 +53,7 @@ void DoBroadcast::GenerateBroadcastSymbols(size_t frame_id) {
     ctrl_data.frame_id_ = frame_id + (kUseArgos ? TX_FRAME_DELTA : 0);
   }
 
-  arma::uvec sched_ue_list =  mac_sched_->ScheduledUeList( frame_id, 0u );
+  arma::uvec sched_ue_list =  mac_sched_->ScheduledUeList( frame_id , 0u );
   
   std::memset(ctrl_data.ue_map_, 0, sizeof(ctrl_data.ue_map_));
   for( size_t ue_idx = 0; ue_idx < cfg_->SpatialStreamsNum(); ue_idx++ ){
