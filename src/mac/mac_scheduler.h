@@ -19,6 +19,14 @@ class MacScheduler {
   size_t ScheduledUeUlMcs(size_t frame_id, size_t ue_id);
   size_t ScheduledUeDlMcs(size_t frame_id, size_t ue_id);
 
+
+  bool IsUeLocalScheduled(size_t frame_id, size_t sc_id, size_t ue_id) {
+    size_t gp = frame_id % num_groups_;
+    //return true;
+    return (schedule_buffer_[gp][ue_id + cfg_->UeAntNum() * sc_id] != 0);
+    //return ( rx_scheduled_ue_list_[ ue_id ] == 1 ) ? true : false;
+  }
+
   arma::uvec rx_scheduled_ue_list_; //Received scheduled ue list
 
  private:
