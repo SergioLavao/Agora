@@ -24,7 +24,7 @@
   "beamsweep": true,
   "beacon_antenna": 0,
   "frame_schedule": [
-    "BGGGGGPGGGUUUGGG"
+    "BGGGGGPGGGUUUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG"
   ],
   "client_ul_pilot_syms": 2,
   /* UE configuration */
@@ -53,7 +53,7 @@
   "exclude_cores": [],
   "ue_core_offset": 48,
   "ue_worker_thread_num": 4,
-  "ue_socket_thread_num": 2,
+  "ue_socket_thread_num": 1,
   "core_offset": 16,
   "worker_thread_num": 8,
   /* 18 bs radios */
