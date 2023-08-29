@@ -441,6 +441,7 @@ set(COMMON_SOURCES
   src/common/memory_manage.cc
   src/common/scrambler.cc
   src/mac/mac_scheduler.cc
+  src/mac/schedulers/proportional_fairness.cc
   src/common/ipc/udp_comm.cc
   src/common/ipc/network_utils.cc
   src/common/loggers/csv_logger.cc

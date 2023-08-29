@@ -4,27 +4,37 @@
  */
 #include "mac_scheduler.h"
 
-MacScheduler::MacScheduler(Config* const cfg) : cfg_(cfg) {
-  num_groups_ =
-      (cfg_->SpatialStreamsNum() == cfg_->UeAntNum()) ? 1 : cfg_->UeAntNum();
-  schedule_buffer_.Calloc(num_groups_, cfg_->UeAntNum() * cfg_->OfdmDataNum(),
-                          Agora_memory::Alignment_t::kAlign64);
-  schedule_buffer_index_.Calloc(num_groups_,
-                                cfg_->SpatialStreamsNum() * cfg_->OfdmDataNum(),
-                                Agora_memory::Alignment_t::kAlign64);
-  // Create round-robin schedule
-  for (size_t gp = 0u; gp < num_groups_; gp++) {
-    for (size_t sc = 0; sc < cfg_->OfdmDataNum(); sc++) {
-      for (size_t ue = gp; ue < gp + cfg_->SpatialStreamsNum(); ue++) {
-        size_t cur_ue = ue % cfg_->UeAntNum();
-        // for now all SCs are allocated to scheduled UEs
-        schedule_buffer_[gp][cur_ue + cfg_->UeAntNum() * sc] = 1;
-        schedule_buffer_index_[gp][(ue - gp) + cfg_->SpatialStreamsNum() * sc] =
-            cur_ue;
+bool constexpr kRoundRobbin = true;
+
+MacScheduler::MacScheduler(Config* const cfg) : cfg_(cfg),
+ pf_scheduler_( cfg_->SpatialStreamsNum(), cfg_->BsAntNum(), cfg_->UeAntNum(),cfg_->OfdmDataNum() ),
+ current_schedule_option_(0) {
+  
+  num_groups_ = pf_scheduler_.actions_num_;
+
+  if( kRoundRobbin )
+  {
+    num_groups_ =
+        (cfg_->SpatialStreamsNum() == cfg_->UeAntNum()) ? 1 : cfg_->UeAntNum();
+    schedule_buffer_.Calloc(num_groups_, cfg_->UeAntNum() * cfg_->OfdmDataNum(),
+                            Agora_memory::Alignment_t::kAlign64);
+    schedule_buffer_index_.Calloc(num_groups_,
+                                  cfg_->SpatialStreamsNum() * cfg_->OfdmDataNum(),
+                                  Agora_memory::Alignment_t::kAlign64);
+    // Create round-robin schedule
+    for (size_t gp = 0u; gp < num_groups_; gp++) {
+      for (size_t sc = 0; sc < cfg_->OfdmDataNum(); sc++) {
+        for (size_t ue = gp; ue < gp + cfg_->SpatialStreamsNum(); ue++) {
+          size_t cur_ue = ue % cfg_->UeAntNum();
+          // for now all SCs are allocated to scheduled UEs
+          schedule_buffer_[gp][cur_ue + cfg_->UeAntNum() * sc] = 1;
+          schedule_buffer_index_[gp][(ue - gp) + cfg_->SpatialStreamsNum() * sc] =
+              cur_ue;
+        }
       }
     }
   }
-
+  
   ul_mcs_buffer_.Calloc(num_groups_, cfg_->UeAntNum(),
                         Agora_memory::Alignment_t::kAlign64);
   dl_mcs_buffer_.Calloc(num_groups_, cfg_->UeAntNum(),
@@ -38,14 +48,33 @@ MacScheduler::MacScheduler(Config* const cfg) : cfg_(cfg) {
 }
 
 MacScheduler::~MacScheduler() {
+  pf_scheduler_.schedule_buffer_.Free();
+  pf_scheduler_.schedule_buffer_index_.Free();
   schedule_buffer_.Free();
   schedule_buffer_index_.Free();
   ul_mcs_buffer_.Free();
   dl_mcs_buffer_.Free();
 }
 
+void MacScheduler::UpdateSchedule()
+{
+  current_schedule_option_++;
+}
+
+size_t MacScheduler::GetScheduleCombination()
+{
+  return current_schedule_option_;
+}
+
 bool MacScheduler::IsUeScheduled(size_t frame_id, size_t sc_id, size_t ue_id) {
   size_t gp = frame_id % num_groups_;
+
+  if( kRoundRobbin == false )
+  {
+    gp = pf_scheduler_.UpdateScheduler( frame_id , {0.1F} );
+    return (pf_scheduler_.schedule_buffer_[gp][ue_id + cfg_->UeAntNum() * sc_id] != 0);
+  }
+
   return (schedule_buffer_[gp][ue_id + cfg_->UeAntNum() * sc_id] != 0);
 }
 
@@ -56,6 +85,15 @@ size_t MacScheduler::ScheduledUeIndex(size_t frame_id, size_t sc_id,
 
 arma::uvec MacScheduler::ScheduledUeMap(size_t frame_id, size_t sc_id) {
   size_t gp = frame_id % num_groups_;
+
+  if( kRoundRobbin == false )
+  {
+    gp = pf_scheduler_.UpdateScheduler( frame_id , {0.1F} );
+    return arma::uvec(reinterpret_cast<unsigned long long*>(
+                        &pf_scheduler_.schedule_buffer_[gp][cfg_->UeAntNum() * sc_id]),
+                    cfg_->UeAntNum(), false);
+  }
+
   return arma::uvec(reinterpret_cast<unsigned long long*>(
                         &schedule_buffer_[gp][cfg_->UeAntNum() * sc_id]),
                     cfg_->UeAntNum(), false);
@@ -63,6 +101,15 @@ arma::uvec MacScheduler::ScheduledUeMap(size_t frame_id, size_t sc_id) {
 
 arma::uvec MacScheduler::ScheduledUeList(size_t frame_id, size_t sc_id) {
   size_t gp = frame_id % num_groups_;
+
+  if( kRoundRobbin == false )
+  {
+    gp = pf_scheduler_.UpdateScheduler( frame_id , {0.1F} );
+    return sort(arma::uvec(
+        reinterpret_cast<unsigned long long*>(
+            &pf_scheduler_.schedule_buffer_index_[gp][cfg_->SpatialStreamsNum() * sc_id]),
+        cfg_->SpatialStreamsNum(), false));
+  }
   return sort(arma::uvec(
       reinterpret_cast<unsigned long long*>(
           &schedule_buffer_index_[gp][cfg_->SpatialStreamsNum() * sc_id]),
@@ -71,10 +118,18 @@ arma::uvec MacScheduler::ScheduledUeList(size_t frame_id, size_t sc_id) {
 
 size_t MacScheduler::ScheduledUeUlMcs(size_t frame_id, size_t ue_id) {
   size_t gp = frame_id % num_groups_;
+  if( kRoundRobbin == false )
+  {
+    gp = pf_scheduler_.UpdateScheduler( frame_id , {0.1F} );
+  }
   return ul_mcs_buffer_[gp][ue_id];
 }
 
 size_t MacScheduler::ScheduledUeDlMcs(size_t frame_id, size_t ue_id) {
   size_t gp = frame_id % num_groups_;
+  if( kRoundRobbin == false )
+  {
+    gp = pf_scheduler_.UpdateScheduler( frame_id , {0.1F} );
+  }
   return dl_mcs_buffer_[gp][ue_id];
 }

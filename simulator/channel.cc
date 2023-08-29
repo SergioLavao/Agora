@@ -26,7 +26,7 @@ Channel::Channel(const Config* const config, std::string& in_channel_type,
 
   if( cfg_->FreqDomainChannel() )
   {
-    //Adapt the SNR to the signal scale, when FFTs are bypassed, the signal is downscaled by OfdmCaNum.
+    //Adapt the SNR to the signal scale, when FFTs are bypassed, the signal is downscaled by OfdmCaNum at SimdConvertFloatToShort().
     snr_lin = snr_lin * cfg_->OfdmCaNum()  / cfg_->UeAntNum();
   }
 
