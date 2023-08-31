@@ -119,7 +119,7 @@ ProportionalFairness::ProportionalFairness( const size_t spatial_streams, const 
 size_t ProportionalFairness::UpdateScheduler( size_t frame, std::vector<float> ues_capacity )
 {
 
-    std::vector<float> ues_capacity = { 0.68226f,0.678098f,0.671843f,0.68403f };
+    std::vector<float> ues_capacity_ = { 0.68226f,0.678098f,0.671843f,0.68403f };
 
     if( current_frame != frame )
     {
