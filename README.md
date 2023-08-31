@@ -1,4 +1,4 @@
-[![Build Status](https://falcon.ecg.rice.edu:443/buildStatus/icon?job=github_public_agora%2Fsheduler-proportional-fairness)](https://falcon.ecg.rice.edu:443/job/github_public_agora/job/sheduler-proportional-fairness/)
+[![Build Status](https://falcon.ecg.rice.edu:443/buildStatus/icon?job=github_public_agora%2Fmcs-hw-datasets)](https://falcon.ecg.rice.edu:443/job/github_public_agora/job/mcs-hw-datasets/)
 
 Agora is a complete software realization of real-time massive MIMO baseband processing. 
 
