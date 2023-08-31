@@ -58,8 +58,8 @@ class ProportionalFairness {
   std::vector<size_t> ues_vector;
   std::vector<size_t> combination;
 
-  void Schedule( size_t frame, std::vector<float> csi_ );
-  void UpdatePF( size_t frame, std::vector<float> csi_ );
+  void Schedule( size_t frame, std::vector<float> ues_capacity );
+  void UpdatePF( size_t frame, std::vector<float> ues_capacity );
 
   void Combination( int k, int offset);
   

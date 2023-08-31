@@ -106,7 +106,7 @@ ProportionalFairness::ProportionalFairness( const size_t spatial_streams, const 
             ss << schedule_buffer_[gp][ue] << " ";
         }    
 
-        ss << "]\n";
+        ss << "]\n\n";
 
     }
 
@@ -116,17 +116,17 @@ ProportionalFairness::ProportionalFairness( const size_t spatial_streams, const 
 
 }
 
-size_t ProportionalFairness::UpdateScheduler( size_t frame, std::vector<float> csi )
+size_t ProportionalFairness::UpdateScheduler( size_t frame, std::vector<float> ues_capacity )
 {
 
-    std::vector<float> csi_ = { 0.68226f,0.678098f,0.671843f,0.68403f };
+    std::vector<float> ues_capacity = { 0.68226f,0.678098f,0.671843f,0.68403f };
 
     if( current_frame != frame )
     {
 
         current_frame = frame;
-        Schedule( frame , csi_);
-        UpdatePF( frame , csi_);
+        Schedule( frame , ues_capacity);
+        UpdatePF( frame , ues_capacity);
         
         std::vector<size_t> option = combination_vector[selected_action_];
 
@@ -151,7 +151,7 @@ size_t ProportionalFairness::UpdateScheduler( size_t frame, std::vector<float> c
 
 }
 
-void ProportionalFairness::Schedule( size_t frame , std::vector<float> csi_ )
+void ProportionalFairness::Schedule( size_t frame , std::vector<float> ues_capacity )
 {
     arma::vec pf_;
     pf_.zeros(actions_num_);
@@ -190,7 +190,7 @@ void ProportionalFairness::Schedule( size_t frame , std::vector<float> csi_ )
 
                 }
 
-                pf_[action] += csi_[ue_idx] / tp_history;
+                pf_[action] += ues_capacity[ue_idx] / tp_history;
 
                 if( pf_[action] >= max_pf )
                 {
@@ -204,20 +204,20 @@ void ProportionalFairness::Schedule( size_t frame , std::vector<float> csi_ )
     }
 }
 
-void ProportionalFairness::UpdatePF( size_t frame, std::vector<float> csi_ )
+void ProportionalFairness::UpdatePF( size_t frame, std::vector<float> ues_capacity )
 {
     
     for( size_t i = 0; i < combination_vector[selected_action_].size(); i++)
     {
         size_t idx_ = combination_vector[selected_action_][i];
-        pf_ues_history[idx_] += csi_[idx_];
+        pf_ues_history[idx_] += ues_capacity[idx_];
     }
 
     for( size_t ue = 0; ue < ues_num_; ue++)
     {
         if(std::find(combination_vector[selected_action_].begin(), combination_vector[selected_action_].end(), ue) != combination_vector[selected_action_].end()) {
             ues_flags_[ue] = true;
-            last_SE_[ue] = csi_[ue];
+            last_SE_[ue] = ues_capacity[ue];
         } else {
             ues_flags_[ue] = false;
             last_SE_[ue] = 0.0F;
